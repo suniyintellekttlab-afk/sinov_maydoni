@@ -1,0 +1,50 @@
+{% macro brand_mark(cls='brand-mark') -%}
+<svg class="{{ cls }}" viewBox="0 0 34 34" aria-hidden="true" focusable="false">
+  <g fill="#1F4FB2">
+    <rect x="6" y="6" width="22" height="22" rx="2"/>
+    <rect x="6" y="6" width="22" height="22" rx="2" transform="rotate(45 17 17)"/>
+  </g>
+  <circle cx="17" cy="17" r="5" fill="#F2A93B"/>
+  <circle cx="17" cy="17" r="2" fill="#FFFFFF"/>
+</svg>
+{%- endmacro %}
+
+{% macro diff_badge(d) -%}
+{% set cls = {'oson': 'diff-oson', 'o‘rta': 'diff-orta', 'qiyin': 'diff-qiyin'}.get(d, '') %}
+<span class="badge {{ cls }}">{{ d }}</span>
+{%- endmacro %}
+
+{% macro pager(page, pages) -%}
+{% if pages > 1 %}
+<nav class="pager" aria-label="Sahifalar">
+  {% for n in range(1, pages + 1) %}
+    {% set args = dict(request.view_args or {}) %}
+    {% set _ = args.update(request.args.to_dict()) %}
+    {% set _ = args.update({'page': n}) %}
+    {% if n == page %}<span class="current" aria-current="page">{{ n }}</span>
+    {% else %}<a href="{{ url_for(request.endpoint, **args) }}">{{ n }}</a>{% endif %}
+  {% endfor %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{% macro test_card(t) -%}
+<article class="test-card">
+  <a class="chip" style="--c: {{ t.subject_color }}" href="{{ url_for('tests_list', fan=t.subject_slug) }}">
+    <span aria-hidden="true">{{ t.subject_icon }}</span> {{ t.subject_name }}
+  </a>
+  <h3><a href="{{ url_for('test_detail', test_id=t.id) }}">{{ t.title }}</a></h3>
+  <p>{{ t.description }}</p>
+  <div class="test-meta">
+    <span>{{ t.q_count }} ta savol</span>
+    <span>{{ t.duration_min }} daqiqa</span>
+    {{ diff_badge(t.difficulty) }}
+  </div>
+  {% if t.q_count %}
+  <a class="btn btn-outline btn-sm" href="{{ url_for('test_detail', test_id=t.id) }}">Batafsil</a>
+  {% else %}
+  <span class="badge">Tez orada</span>
+  {% endif %}
+</article>
+{%- endmacro %}
+

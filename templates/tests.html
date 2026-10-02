@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Barcha testlar — {{ S.site_name }}{% endblock %}
+{% block content %}
+<style>
+  .all-tests-page{max-width:1120px;margin:0 auto;padding:8px 0 42px}
+  .all-tests-top{display:flex;justify-content:space-between;gap:18px;align-items:center;margin-bottom:14px}
+  .all-tests-welcome{color:#6f8099;font-size:13px;margin-bottom:4px}
+  .all-tests-title{margin:0;color:#14213a;font-size:20px;font-weight:800;letter-spacing:-.3px}
+  .all-tests-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .all-tests-action{height:42px;padding:0 16px;border:1px solid #dce5ef;border-radius:12px;background:#fff;color:#30415c;text-decoration:none;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgba(18,35,60,.03)}
+  .all-tests-action:hover{background:#f4f8fd;border-color:#c7d7e9}
+  .all-tests-action.primary{color:#355cbd}
+  .all-tests-hero{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr);gap:14px;margin-bottom:15px}
+  .all-tests-card{border:1px solid #dbe5ef;background:#fff;border-radius:17px;box-shadow:0 5px 20px rgba(30,52,84,.035)}
+  .all-tests-main{min-height:216px;padding:28px 22px;position:relative;overflow:hidden;background:linear-gradient(105deg,#fff 0%,#fff 58%,#f8fcf4 100%)}
+  .all-tests-main:after{content:'🎓';position:absolute;right:54px;top:57px;font-size:68px;filter:drop-shadow(0 9px 10px rgba(25,40,70,.14))}
+  .all-tests-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid #d4ebae;background:#f4fae9;color:#65a62b;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:800}
+  .all-tests-main h1{margin:10px 0 7px;font-size:23px;line-height:1.2;color:#101d36;letter-spacing:-.5px;max-width:620px}
+  .all-tests-main p{margin:0;color:#70819a;font-size:13px;line-height:1.55;max-width:600px}
+  .all-tests-buttons{display:flex;gap:9px;margin-top:15px;position:relative;z-index:2}
+  .all-tests-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 17px;border-radius:12px;text-decoration:none;font-size:13px;font-weight:800;border:1px solid #d9e3ed;background:#fff;color:#50627c}
+  .all-tests-btn.green{background:#86c83b;color:#fff;border-color:#78b631;box-shadow:0 6px 12px rgba(108,173,45,.2)}
+  .all-tests-side{padding:19px 18px;min-height:178px}
+  .all-tests-side h3{margin:0 0 10px;color:#17243c;font-size:14px}
+  .all-tests-side p{font-size:12px;color:#718199;margin:0 0 12px}
+  .benefit{display:flex;align-items:center;gap:8px;color:#60718a;font-size:12px;margin:9px 0}
+  .benefit i{font-style:normal;width:18px;height:18px;border-radius:50%;background:#eef8e4;color:#74b52d;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+  .start-free{display:flex;align-items:center;justify-content:center;width:100%;height:39px;margin-top:13px;border-radius:12px;background:#8bce3e;color:#fff;text-decoration:none;font-weight:800;font-size:13px;box-shadow:0 5px 12px rgba(112,178,45,.18)}
+  .fan-section-head{display:flex;align-items:end;justify-content:space-between;margin:9px 0 9px}
+  .fan-section-head h2{margin:0;color:#15233d;font-size:16px;font-weight:800}
+  .fan-section-head p{margin:4px 0 0;color:#8190a5;font-size:11px}
+  .all-fans-link{color:#72b52e;text-decoration:none;font-size:12px;font-weight:800}
+  .all-fans-link:hover{text-decoration:underline}
+  .fan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+  .fan-card{min-height:99px;border:1px solid #dbe5ef;border-radius:15px;background:#fff;display:flex;align-items:center;gap:15px;padding:14px 18px;text-decoration:none;box-shadow:0 2px 9px rgba(30,52,84,.025);transition:.16s ease}
+  .fan-card:hover{transform:translateY(-1px);border-color:#cbd9e8;box-shadow:0 7px 18px rgba(35,58,90,.08)}
+  .fan-icon{width:62px;height:62px;flex:0 0 62px;display:flex;align-items:center;justify-content:center;font-size:39px;filter:drop-shadow(0 5px 6px rgba(20,35,60,.12))}
+  .fan-info{min-width:0}
+  .fan-name{margin:0 0 5px;color:#152139;font-size:14px;font-weight:800}
+  .fan-count{margin:0;color:#71819a;font-size:11px}
+  .selected-area{margin-top:18px;padding-top:8px}
+  .selected-area .selected-title{font-size:18px;margin:0 0 4px;color:#14213a}
+  .selected-area .muted{color:#71819a;font-size:12px}
+  .topic-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+  .topic-card{border:1px solid #dbe5ef;border-radius:12px;background:#fff;padding:13px;text-decoration:none;color:#22324c}
+  .topic-card:hover{border-color:#bcd0e5}
+  .topic-card h3{font-size:13px;margin:0 0 5px}.topic-card p{font-size:11px;color:#75859c;margin:0}
+  .all-tests-page .test-grid{margin-top:15px}
+  .bank-tests{margin-top:18px}.bank-tests h2{font-size:17px;color:#15233d;margin:0 0 10px}
+  .bank-test-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .bank-test{display:flex;justify-content:space-between;align-items:center;gap:14px;border:1px solid #dbe5ef;border-radius:13px;background:#fff;padding:14px 16px;text-decoration:none;color:#22324c}
+  .bank-test:hover{border-color:#bcd0e5;box-shadow:0 5px 16px rgba(35,58,90,.06)}
+  .bank-test h3{font-size:13px;margin:0 0 5px}.bank-test p{font-size:11px;color:#75859c;margin:0}
+  .bank-test-go{font-size:12px;color:#72b52e;font-weight:800;white-space:nowrap}
+  @media(max-width:900px){.all-tests-hero{grid-template-columns:1fr}.fan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.all-tests-main:after{right:25px}}
+  @media(max-width:600px){.all-tests-page{padding-left:10px;padding-right:10px}.all-tests-top{align-items:flex-start;flex-direction:column}.fan-grid,.bank-test-list{grid-template-columns:1fr}.topic-grid{grid-template-columns:1fr}.all-tests-main{padding:22px 17px}.all-tests-main:after{opacity:.35;right:12px}.all-tests-main h1{font-size:20px}}
+</style>
+
+<div class="all-tests-page">
+  <div class="all-tests-top">
+    <div>
+      <div class="all-tests-welcome">Xush kelibsiz 👋</div>
+      <h1 class="all-tests-title">Testlar markazi</h1>
+    </div>
+    <div class="all-tests-actions">
+      <a class="all-tests-action" href="{{ url_for('question_bank') }}">📚 Savol banki</a>
+      <a class="all-tests-action primary" href="{{ url_for('combo_exam_form') }}">🏅 Milliy sertifikat</a>
+      <a class="all-tests-action primary" href="{{ url_for('dtm_exam_form') }}">🎓 DTM simulyatsiya</a>
+    </div>
+  </div>
+
+  <div class="all-tests-hero">
+    <section class="all-tests-card all-tests-main">
+      <span class="all-tests-badge">⚡ {{ "{:,}".format(bank_question_total or 0).replace(',', ' ') }}+ savol, bepul</span>
+      <h1>Bilimingizni bugun sinab ko‘ring</h1>
+      <p>Ro‘yxatdan o‘ting — natijalaringiz saqlanadi. AI tahlil orqali bilimlaringizni yanada chuqurlashtiring.</p>
+      <div class="all-tests-buttons">
+        <a class="all-tests-btn green" href="{{ url_for('dtm_exam_form') }}">🚀 DTM simulyatsiyasi</a>
+        <a class="all-tests-btn" href="{{ url_for('ai_ustoz_view') }}">🤖 AI Tahlilim</a>
+      </div>
+    </section>
+    <aside class="all-tests-card all-tests-side">
+      <h3>Nega ro‘yxatdan o‘tish kerak?</h3>
+      <p>Bepul, 30 soniyada</p>
+      <div class="benefit"><i>✓</i> Natijalaringiz saqlanadi</div>
+      <div class="benefit"><i>✓</i> AI tahlil imkoniyati</div>
+      <div class="benefit"><i>✓</i> Reyting va musobaqalar</div>
+      <a class="start-free" href="{{ url_for('login_view') }}">Bepul boshlash</a>
+    </aside>
+  </div>
+
+  <div class="fan-section-head">
+    <div>
+      <h2>Fan tanlang</h2>
+      <p>Har bir fan bo‘yicha progressingizni kuzating</p>
+    </div>
+    <a class="all-fans-link" href="{{ url_for('tests_list') }}">Barcha fanlar ›</a>
+  </div>
+
+  <div class="fan-grid">
+    {% for s in subjects %}
+      <a class="fan-card" href="{{ url_for('tests_list', fan=s.slug) }}">
+        <div class="fan-icon">{{ s.icon or '📚' }}</div>
+        <div class="fan-info">
+          <h3 class="fan-name">{{ s.name }}</h3>
+          <p class="fan-count">{{ s.question_count or 0 }} ta savol</p>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+
+  {% if selected_subject %}
+  <section class="selected-area">
+    <h2 class="selected-title">{{ selected_subject.icon }} {{ selected_subject.name }}</h2>
+    <div class="muted">{{ selected_subject.question_count or 0 }} ta savol · {{ selected_subject.topic_count or 0 }} ta mavzu</div>
+    <div class="topic-grid">
+      {% for tp in topics if tp.subject_slug == fan %}
+      <a class="topic-card" href="{{ url_for('tests_list', fan=fan, mavzu=tp.id) }}">
+        <h3>{{ tp.name }}</h3><p>{{ tp.question_count or 0 }} ta savol · {{ tp.test_count or 0 }} ta test</p>
+      </a>
+      {% endfor %}
+      {% if no_topic_count %}
+      <a class="topic-card" href="{{ url_for('tests_list', fan=fan, mavzusiz=1) }}"><h3>Mavzusiz savollar</h3><p>{{ no_topic_count }} ta savol</p></a>
+      {% endif %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if selected_subject %}
+  <section class="bank-tests">
+    <h2>{% if topic_id %}Tanlangan mavzu bo‘yicha testlar{% elif no_topic %}Mavzusiz savollardan tuzilgan testlar{% else %}{{ selected_subject.name }} testlari{% endif %}</h2>
+    <div class="bank-test-list">
+      {% for t in tests %}
+      <a class="bank-test" href="{{ url_for('test_detail', test_id=t.id) }}">
+        <div><h3>{{ t.title }}</h3><p>{{ t.q_count }} ta savol · {{ t.difficulty }} · {{ t.duration_min }} daqiqa</p></div>
+        <span class="bank-test-go">Boshlash →</span>
+      </a>
+      {% else %}
+      <p class="muted">Bu tanlovda hozircha test yo‘q.</p>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+

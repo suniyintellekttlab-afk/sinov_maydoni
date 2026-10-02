@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}O‘tish ballari — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container admission-page">
+  <div class="admission-source-note">
+    ⚡ Jadvalda yuklangan yil kesimidagi qabul ma’lumotlari ko‘rsatiladi. Eng so‘nggi rasmiy ma’lumotlarni
+    <a href="https://mandat.uzbmb.uz/" target="_blank" rel="noopener">Bilim va malakalarni baholash agentligi saytida tekshiring →</a>
+  </div>
+
+  <form class="admission-score-box" method="get" action="{{ url_for('admission_cutoffs_view') }}">
+    <div>
+      <h1>Ballingiz bilan qayerga kirasiz?</h1>
+      <p>Ballingizni kiriting, tarixiy o‘tish ballaridan past yoki teng yo‘nalishlarni ko‘ring.</p>
+    </div>
+    <div class="admission-score-entry">
+      <label class="sr-only" for="admission-score">To‘plagan ballingiz</label>
+      <input id="admission-score" name="ball" type="text" inputmode="decimal" placeholder="Masalan: 142,5" value="{{ score_text }}">
+      <button class="btn" type="submit">Ko‘rish</button>
+    </div>
+  </form>
+
+  <form class="admission-filters" method="get" action="{{ url_for('admission_cutoffs_view') }}">
+    {% if score_text %}<input type="hidden" name="ball" value="{{ score_text }}">{% endif %}
+    <label class="admission-search"><span aria-hidden="true">⌕</span><input name="q" type="search" value="{{ search }}" placeholder="Yo‘nalish, OTM yoki fan nomi"></label>
+    <label><span class="sr-only">Fanlar kombinatsiyasi</span><select name="fanlar">
+      <option value="">Barcha fanlar</option>
+      {% for p in pairs %}<option value="{{ p.filter_value if p.filter_value is defined else p.subjects }}" {% if selected_pair == (p.filter_value if p.filter_value is defined else p.subjects) %}selected{% endif %}>{{ p.subjects }}</option>{% endfor %}
+    </select></label>
+    <label><span class="sr-only">Yil</span><select name="year"><option value="">Barcha yillar</option>{% for y in years %}<option value="{{ y.year }}" {% if selected_year == y.year|string %}selected{% endif %}>{{ y.year }}</option>{% endfor %}</select></label>
+    <label><span class="sr-only">Hudud</span><select name="hudud"><option value="">Barcha hududlar</option>{% for r in regions %}<option value="{{ r.region_name }}" {% if selected_region == r.region_name %}selected{% endif %}>{{ r.region_name }}</option>{% endfor %}</select></label>
+    <label><span class="sr-only">Ta’lim shakli</span><select name="shakl"><option value="">Barcha shakllar</option>{% for f in forms %}<option value="{{ f.education_form }}" {% if selected_form == f.education_form %}selected{% endif %}>{{ f.education_form }}</option>{% endfor %}</select></label>
+    <button class="btn btn-outline" type="submit">Filtrlash</button>
+  </form>
+
+  <div class="admission-results-head"><b>{{ total_count }} ta yo‘nalish</b>{% if score is not none %}<span>{{ score|pct }} ball bo‘yicha mos natijalar</span>{% endif %}</div>
+  {% if rows %}
+  <div class="admission-grid">
+    {% for r in rows %}
+    <article class="admission-card">
+      <div class="admission-card-head">
+        <div><h2>{{ r.yonalish_name or (r.s1_name ~ ' + ' ~ r.s2_name) }}</h2><p>{{ r.university_name }}</p></div>
+        <span class="admission-year">{{ r.year }}{% if r.quota %} · {{ r.quota }} o‘rin{% endif %}</span>
+      </div>
+      <div class="admission-scores">
+        {% if r.grant_ball is not none %}<div><span>GRANT</span><strong>{{ r.grant_ball|pct }}</strong></div>{% endif %}
+        {% if r.contract_ball is not none %}<div><span>KONTRAKT</span><strong>{{ r.contract_ball|pct }}</strong></div>{% endif %}
+        {% if r.grant_ball is none and r.contract_ball is none %}<div><span>O‘TISH BALLI</span><strong>—</strong></div>{% endif %}
+      </div>
+      <div class="admission-card-meta"><span>{{ r.education_form or 'Ta’lim shakli ko‘rsatilmagan' }} · {{ r.language or 'Til ko‘rsatilmagan' }}{% if r.region_name %} · {{ r.region_name }}{% endif %}</span>
+        {% if score is not none %}<b class="{% if (r.grant_ball is not none and score >= r.grant_ball) or (r.contract_ball is not none and score >= r.contract_ball) or (r.grant_ball is none and r.contract_ball is none and r.cutoff_ball is not none and score >= r.cutoff_ball) %}admission-match{% else %}admission-below{% endif %}">{% if (r.grant_ball is not none and score >= r.grant_ball) or (r.contract_ball is not none and score >= r.contract_ball) or (r.grant_ball is none and r.contract_ball is none and r.cutoff_ball is not none and score >= r.cutoff_ball) %}Ballingiz yetadi{% else %}Ball yetmaydi{% endif %}</b>{% endif %}
+      </div>
+      <div class="admission-card-foot"><span>Fanlar: {{ r.subject_label if r.subject_label else r.s1_name ~ ' · ' ~ r.s2_name }}</span>{% if r.direction_code %}<b>Shifr {{ r.direction_code }}</b>{% endif %}</div>
+    </article>
+    {% endfor %}
+  </div>
+  {% if total_pages > 1 %}
+  <nav class="admission-pagination" aria-label="Sahifalar">
+    {% if page > 1 %}<a class="btn btn-outline btn-sm" href="{{ url_for('admission_cutoffs_view', q=search, year=selected_year, fanlar=selected_pair, hudud=selected_region, shakl=selected_form, ball=score_text, page=page-1) }}">← Oldingi</a>{% endif %}
+    <span>{{ page }} / {{ total_pages }}-sahifa</span>
+    {% if page < total_pages %}<a class="btn btn-outline btn-sm" href="{{ url_for('admission_cutoffs_view', q=search, year=selected_year, fanlar=selected_pair, hudud=selected_region, shakl=selected_form, ball=score_text, page=page+1) }}">Keyingi →</a>{% endif %}
+  </nav>
+  {% endif %}
+  {% else %}
+  <div class="admission-empty">
+    <strong>{% if score is not none %}Bu ballga mos yo‘nalish topilmadi{% elif search or selected_year or selected_pair or selected_region or selected_form %}Mos yo‘nalish topilmadi{% else %}Hozircha o‘tish ballari kiritilmagan{% endif %}</strong>
+    <p>Natijalar administrator yuritadigan yagona bazadan olinadi. Rasmiy ma’lumot uchun Bilim va malakalarni baholash agentligining Mandat sahifasini tekshiring.</p>
+    <a href="https://mandat.uzbmb.uz/" target="_blank" rel="noopener">Rasmiy Mandat sahifasini ochish →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

@@ -1,0 +1,14 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}{{ 'Yangilikni tahrirlash' if item and item.id else 'Yangi yangilik' }}{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>{{ 'Yangilikni tahrirlash' if item and item.id else 'Yangi yangilik' }}</h1><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_news') }}">Ro‘yxatga qaytish</a></div>
+<form class="form-card form" method="post" style="max-width:820px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="field"><label for="title">Sarlavha</label><input id="title" type="text" name="title" value="{{ item.title if item else '' }}" maxlength="160" required></div>
+  <div class="field"><label for="summary">Qisqacha mazmun</label><input id="summary" type="text" name="summary" value="{{ item.summary if item else '' }}" maxlength="300"></div>
+  <div class="field"><label for="body">Matn</label><textarea id="body" name="body" style="min-height:280px" required>{{ item.body if item else '' }}</textarea><span class="hint">Abzatslar orasida bo‘sh qator qoldiring.</span></div>
+  <label class="check"><input type="checkbox" name="is_published" {% if not item or item.is_published %}checked{% endif %}> Saytda e’lon qilish</label>
+  <div class="row-actions"><button class="btn btn-primary" type="submit">Saqlash</button><a class="btn btn-ghost" href="{{ url_for('admin_news') }}">Bekor qilish</a></div>
+</form>
+{% endblock %}
+

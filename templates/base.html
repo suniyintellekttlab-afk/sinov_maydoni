@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ S.site_name }} — onlayn test maydoni{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ S.tagline }}{% endblock %}">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="theme-color" content="#1F4FB2">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Cg fill='%231F4FB2'%3E%3Crect x='6' y='6' width='22' height='22' rx='2'/%3E%3Crect x='6' y='6' width='22' height='22' rx='2' transform='rotate(45 17 17)'/%3E%3C/g%3E%3Ccircle cx='17' cy='17' r='5' fill='%23F2A93B'/%3E%3Ccircle cx='17' cy='17' r='2' fill='%23FFFFFF'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Unbounded:wght@400;500;600&display=swap&subset=latin-ext,cyrillic">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('sm-theme');
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+        var l = localStorage.getItem('sm-lang') || 'uz';
+        document.documentElement.setAttribute('lang', l === 'ru' ? 'ru' : 'uz');
+      } catch (e) {}
+    })();
+  </script>
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}{% if request.endpoint in ('tests_list', 'test_detail', 'question_bank', 'battle_view', 'battle_room_view') %} tests-layout{% endif %}">
+{% from "_macros.html" import brand_mark %}
+<a class="visually-hidden" href="#main">Asosiy mazmunga o‘tish</a>
+
+{% block header %}
+{% set ep = request.endpoint or '' %}
+{% if ep in ('tests_list', 'test_detail', 'question_bank') %}
+<aside class="catalog-sidebar" aria-label="Testlar menyusi">
+  <div class="catalog-sidebar-top">
+    <a class="catalog-brand" href="{{ url_for('index') }}">{{ brand_mark() }}<span>{{ S.site_name }}</span></a>
+    <div class="catalog-modes" role="tablist" aria-label="Test turi">
+      <span class="catalog-mode is-active">DTM</span>
+      <span class="catalog-mode">AVTO</span>
+      <span class="catalog-mode">SAT/IELTS</span>
+    </div>
+  </div>
+
+  <nav class="catalog-nav">
+    <a class="catalog-link" href="{{ url_for('index') }}"><span class="catalog-ico">⌂</span><span>Bosh sahifa</span></a>
+    <a class="catalog-link" href="{{ url_for('ai_ustoz_view') }}"><span class="catalog-ico">◈</span><span>AI Ustoz</span><b class="catalog-ai-badge">AI</b></a>
+    <a class="catalog-link" href="#" aria-disabled="true" onclick="return false;"><span class="catalog-ico">▣</span><span>O‘quv reja</span></a>
+    {% if me %}<a class="catalog-link" href="{{ url_for('profile_view') }}"><span class="catalog-ico">▥</span><span>Mening natijalarim</span></a>{% endif %}
+
+    <div class="catalog-section-title">MASHQLAR</div>
+    <a class="catalog-link{% if ep in ('tests_list', 'test_detail') %} is-active{% endif %}" href="{{ url_for('tests_list') }}"><span class="catalog-ico">✓</span><span>Barcha testlar</span></a>
+    <a class="catalog-link{% if ep == 'question_bank' %} is-active{% endif %}" href="{{ url_for('question_bank') }}"><span class="catalog-ico">⌕</span><span>Savol banki</span></a>
+    <a class="catalog-link" href="/dtm-simulyatsiya"><span class="catalog-ico">◉</span><span>DTM simulyatsiya</span></a>
+    <a class="catalog-link{% if ep in ('battle_view', 'battle_room_view') %} is-active{% endif %}" href="{{ url_for('battle_view') }}"><span class="catalog-ico">⚔</span><span>Musobaqalar</span></a>
+    <a class="catalog-link{% if ep == 'admission_cutoffs_view' %} is-active{% endif %}" href="{{ url_for('admission_cutoffs_view') }}"><span class="catalog-ico">⌖</span><span>O‘tish ballari</span></a>
+    <a class="catalog-link" href="#" aria-disabled="true" onclick="return false;"><span class="catalog-ico">◉</span><span>O‘yinlar</span><em>YANGI</em></a>
+    <a class="catalog-link" href="#" aria-disabled="true" onclick="return false;"><span class="catalog-ico">▤</span><span>Kutubxona</span><em>YANGI</em></a>
+    <a class="catalog-link" href="/milliy-sertifikat"><span class="catalog-ico">⌾</span><span>Milliy Sertifikat</span></a>
+
+    <div class="catalog-section-title">NATIJALAR</div>
+    <a class="catalog-link" href="{{ url_for('profile_view') }}"><span class="catalog-ico">♡</span><span>Saqlangan</span></a>
+    <a class="catalog-link" href="#" aria-disabled="true" onclick="return false;"><span class="catalog-ico">⊗</span><span>Xato javoblar</span></a>
+    <a class="catalog-link" href="{{ url_for('leaderboard_view') }}"><span class="catalog-ico">♧</span><span>Reyting</span></a>
+  </nav>
+
+  <div class="catalog-sidebar-bottom">
+    <button class="catalog-more" type="button" aria-disabled="true"><span>•••</span><span>Boshqa</span><span>›</span></button>
+    <div class="catalog-lang" data-lang-switch>
+      <button type="button" data-lang="uz" aria-pressed="true">UZ</button>
+      <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+      <button type="button" data-lang="kir" aria-pressed="false">КИР</button>
+    </div>
+    <a class="catalog-premium" href="{{ url_for('premium_view') }}"><span>♛</span><strong>Premium ol</strong><small>Cheksiz imkoniyat</small></a>
+    {% if me %}
+    <a class="catalog-user" href="{{ url_for('profile_view') }}"><span class="catalog-avatar">{{ me.full_name|initial }}</span><span>{{ me.full_name|short_name }}</span><span class="catalog-settings">⚙</span></a>
+    {% else %}
+    <a class="catalog-user" href="{{ url_for('login_view') }}"><span class="catalog-avatar">↪</span><span>Kirish</span></a>
+    {% endif %}
+  </div>
+</aside>
+{% else %}
+
+{% set ep = request.endpoint or '' %}
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" href="{{ url_for('index') }}">{{ brand_mark() }}<span>{{ S.site_name }}</span></a>
+
+    <nav class="nav" id="site-nav" aria-label="Asosiy menyu">
+      <a class="nav-link" data-i18n="nav.tests" href="{{ url_for('tests_list') }}" {% if ep in ('tests_list', 'test_detail', 'question_bank') %}aria-current="page"{% endif %}>Testlar</a>
+      <a class="nav-link nav-link-ai"href="{{ url_for('ai_ustoz_view') }}"{% if ep == 'ai_ustoz_view' %}aria-current="page"{% endif %}><span data-i18n="nav.ai">AI Ustoz</span><span class="pill-badge pill-ai">AI</span></a>
+      <a class="nav-link" data-i18n="nav.dtm" href="/dtm-simulyatsiya" {% if ep == 'combo_exam_form' and request.path == '/dtm-simulyatsiya' %}aria-current="page"{% endif %}>DTM simulyatsiya</a>
+      <a class="nav-link" data-i18n="nav.milliy" href="/milliy-sertifikat" {% if ep == 'combo_exam_form' and request.path == '/milliy-sertifikat' %}aria-current="page"{% endif %}>Milliy sertifikat</a>
+      <a class="nav-link" data-i18n="nav.leaderboard" href="{{ url_for('leaderboard_view') }}" {% if ep == 'leaderboard_view' %}aria-current="page"{% endif %}>Reyting</a>
+      <a class="nav-link" data-i18n="nav.news" href="{{ url_for('news_list') }}" {% if ep in ('news_list', 'news_detail') %}aria-current="page"{% endif %}>Yangiliklar</a>
+      <a class="nav-link" data-i18n="nav.about" href="{{ url_for('about_view') }}" {% if ep == 'about_view' %}aria-current="page"{% endif %}>Biz haqimizda</a>
+      <a class="nav-link" data-i18n="nav.contact" href="{{ url_for('contact_view') }}" {% if ep == 'contact_view' %}aria-current="page"{% endif %}>Aloqa</a>
+    </nav>
+
+    <div class="header-tools">
+      <div class="lang-switch" role="group" aria-label="Til" data-lang-switch>
+        <button type="button" data-lang="uz" aria-pressed="true">UZ</button>
+        <button type="button" data-lang="ru" aria-pressed="false">RU</button>
+        <button type="button" data-lang="kir" aria-pressed="false">ЎЗ</button>
+      </div>
+
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Rejimni almashtirish" title="Kunduzgi/tungi rejim">
+        <svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><g stroke-linecap="round"><line x1="12" y1="1.5" x2="12" y2="4.2"/><line x1="12" y1="19.8" x2="12" y2="22.5"/><line x1="1.5" y1="12" x2="4.2" y2="12"/><line x1="19.8" y1="12" x2="22.5" y2="12"/><line x1="4.3" y1="4.3" x2="6.2" y2="6.2"/><line x1="17.8" y1="17.8" x2="19.7" y2="19.7"/><line x1="4.3" y1="19.7" x2="6.2" y2="17.8"/><line x1="17.8" y1="6.2" x2="19.7" y2="4.3"/></g></svg>
+        <svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+      </button>
+
+      <div class="dropdown" data-dropdown>
+        <button class="icon-btn" type="button" data-dropdown-toggle aria-haspopup="true" aria-expanded="false" aria-label="Bildirishnomalar" title="Bildirishnomalar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a5 5 0 0 0-5 5v3.2c0 .7-.24 1.37-.68 1.9L5 15h14l-1.32-1.9a3 3 0 0 1-.68-1.9V8a5 5 0 0 0-5-5z"/><path d="M9.5 18a2.5 2.5 0 0 0 5 0"/></svg>
+          {% set nn = latest_news(1) %}{% if nn %}<span class="dot" aria-hidden="true"></span>{% endif %}
+        </button>
+        <div class="dropdown-menu dropdown-wide" role="menu">
+          <div class="dropdown-head" data-i18n="bell.title">So‘nggi yangiliklar</div>
+          {% for n in latest_news(4) %}
+            <a class="dropdown-item" role="menuitem" href="{{ url_for('news_detail', slug=n.slug) }}">
+              <span>{{ n.title }}</span><time class="muted small">{{ n.created_at|dt('%d.%m') }}</time>
+            </a>
+          {% else %}
+            <p class="dropdown-empty muted small" data-i18n="bell.empty">Hozircha yangiliklar yo‘q.</p>
+          {% endfor %}
+          <a class="dropdown-item dropdown-all" role="menuitem" data-i18n="bell.all" href="{{ url_for('news_list') }}">Barcha yangiliklar</a>
+        </div>
+      </div>
+
+      {% if me %}
+      <div class="dropdown" data-dropdown>
+        <button class="user-btn" type="button" data-dropdown-toggle aria-haspopup="true" aria-expanded="false">
+          <span class="avatar">{{ me.full_name|initial }}</span>
+          <span class="user-name">{{ me.full_name|short_name }}</span>
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="dropdown-menu" role="menu">
+          <a class="dropdown-item" role="menuitem" data-i18n="user.profile" href="{{ url_for('profile_view') }}">Profil</a>
+          <a class="dropdown-item" role="menuitem" href="{{ url_for('premium_view') }}">Premium 👑</a>
+          <a class="dropdown-item" role="menuitem" data-i18n="user.settings" href="{{ url_for('settings_view') }}">Sozlamalar</a>
+          {% if me.is_admin %}<a class="dropdown-item" role="menuitem" data-i18n="user.admin" href="{{ url_for('admin_dashboard') }}">Admin panel</a>{% endif %}
+          <form method="post" action="{{ url_for('logout_view') }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="dropdown-item dropdown-danger" role="menuitem" type="submit" data-i18n="user.logout">Chiqish</button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <div class="header-auth">
+        <a class="btn btn-ghost btn-sm" data-i18n="nav.login" href="{{ url_for('login_view') }}">Kirish</a>
+        <a class="btn btn-primary btn-sm" data-i18n="nav.register" href="{{ url_for('register_view') }}">Ro‘yxatdan o‘tish</a>
+      </div>
+      {% endif %}
+
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle aria-label="Menyu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+{% if S.banner_enabled == '1' and S.banner_text %}
+<div class="promo-banner" data-banner data-banner-key="{{ (S.banner_text ~ S.banner_target_date)|length }}-{{ S.banner_target_date }}">
+  <div class="container promo-inner">
+    <div class="promo-text">
+      <span class="promo-icon" aria-hidden="true">🔥</span>
+      <span data-i18n-literal="{{ S.banner_text }}">{{ S.banner_text }}</span>
+      {% if S.banner_target_date %}
+      <span class="promo-countdown" data-countdown="{{ S.banner_target_date }}" aria-live="off">
+        <b data-cd="d">—</b><span data-i18n="banner.days"> kun</span>
+        <b data-cd="h">—</b><span data-i18n="banner.hours"> soat</span>
+      </span>
+      {% endif %}
+    </div>
+    {% if S.banner_cta_text and S.banner_cta_url %}
+      <a class="btn btn-accent btn-sm promo-cta" href="{{ S.banner_cta_url }}">{{ S.banner_cta_text }} <span aria-hidden="true">→</span></a>
+    {% endif %}
+    <button class="promo-close" type="button" data-banner-close aria-label="Yopish">×</button>
+  </div>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block flash %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="container flash-wrap" role="status">
+    {% for cat, msg in messages %}<div class="flash flash-{{ 'ok' if cat == 'ok' else 'err' }}">{{ msg }}</div>{% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+{% endblock %}
+
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+
+{% block footer %}
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="{{ url_for('index') }}">{{ brand_mark() }}<span>{{ S.site_name }}</span></a>
+        <p style="margin-top:.9rem;max-width:34ch">{{ S.footer_text }}</p>
+      </div>
+      <div>
+        <h4 data-i18n="footer.platform">Platforma</h4>
+        <ul>
+          <li><a data-i18n="footer.all_tests" href="{{ url_for('tests_list') }}">Barcha testlar</a></li>
+          <li><a data-i18n="nav.ai" href="{{ url_for('ai_ustoz_view') }}">AI Ustoz</a></li>
+          <li><a data-i18n="nav.dtm" href="/dtm-simulyatsiya">DTM simulyatsiya</a></li>
+          <li><a data-i18n="nav.milliy" href="/milliy-sertifikat">Milliy sertifikat</a></li>
+          <li><a href="{{ url_for('premium_view') }}">Premium 👑</a></li>
+          <li><a data-i18n="nav.leaderboard" href="{{ url_for('leaderboard_view') }}">Reyting</a></li>
+          <li><a data-i18n="nav.news" href="{{ url_for('news_list') }}">Yangiliklar</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="footer.info">Ma’lumot</h4>
+        <ul>
+          <li><a data-i18n="nav.about" href="{{ url_for('about_view') }}">Biz haqimizda</a></li>
+          <li><a data-i18n="footer.faq" href="{{ url_for('faq_view') }}">Savol-javob</a></li>
+          <li><a data-i18n="nav.contact" href="{{ url_for('contact_view') }}">Aloqa</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 data-i18n="footer.contact">Bog‘lanish</h4>
+        <ul>
+          {% if S.phone %}<li><a href="tel:{{ S.phone|replace(' ', '') }}">{{ S.phone }}</a></li>{% endif %}
+          {% if S.email %}<li><a href="mailto:{{ S.email }}">{{ S.email }}</a></li>{% endif %}
+          {% if S.address %}<li>{{ S.address }}</li>{% endif %}
+          {% if S.telegram %}<li><a href="{{ S.telegram }}" rel="noopener" target="_blank">Telegram</a></li>{% endif %}
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© {{ year }} {{ S.site_name }}. <span data-i18n="footer.rights">Barcha huquqlar himoyalangan.</span></span>
+      <span>{{ S.working_hours }}</span>
+    </div>
+  </div>
+</footer>
+{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
+

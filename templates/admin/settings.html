@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Sayt sozlamalari{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>Sayt sozlamalari</h1></div>
+<form class="form-card form" method="post" style="max-width:760px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="field-row">
+    <div class="field"><label for="site_name">Sayt nomi</label><input id="site_name" type="text" name="site_name" value="{{ S.site_name }}" maxlength="60" required></div>
+    <div class="field"><label for="tagline">Shior</label><input id="tagline" type="text" name="tagline" value="{{ S.tagline }}" maxlength="200"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label for="phone">Telefon</label><input id="phone" type="text" name="phone" value="{{ S.phone }}" maxlength="40"></div>
+    <div class="field"><label for="email">Elektron pochta</label><input id="email" type="text" name="email" value="{{ S.email }}" maxlength="120"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label for="address">Manzil</label><input id="address" type="text" name="address" value="{{ S.address }}" maxlength="200"></div>
+    <div class="field"><label for="telegram">Telegram havolasi</label><input id="telegram" type="url" name="telegram" value="{{ S.telegram }}" maxlength="200"></div>
+  </div>
+  <div class="field"><label for="working_hours">Ish vaqti</label><input id="working_hours" type="text" name="working_hours" value="{{ S.working_hours }}" maxlength="120"></div>
+  <div class="field"><label for="footer_text">Pastki qism matni</label><input id="footer_text" type="text" name="footer_text" value="{{ S.footer_text }}" maxlength="250"></div>
+  <div class="field"><label for="about_text">“Biz haqimizda” matni</label><textarea id="about_text" name="about_text" maxlength="4000" style="min-height:200px">{{ S.about_text }}</textarea><span class="hint">Abzatslar orasida bo‘sh qator qoldiring.</span></div>
+  <label class="check"><input type="checkbox" name="registration_open" {% if S.registration_open == '1' %}checked{% endif %}> Yangi foydalanuvchilar ro‘yxatdan o‘ta olsin</label>
+
+  <h3 style="margin-top:1.5rem">Premium tizimi</h3>
+  <label class="check"><input type="checkbox" name="premium_enabled" {% if S.premium_enabled == '1' %}checked{% endif %}> Premium cheklovlarini yoqish</label>
+  <p class="hint" style="margin:.4rem 0 0">
+    O‘chiq bo‘lsa (standart holat), saytdagi barcha imkoniyatlar hammaga bepul ochiq bo‘ladi —
+    "Premium" belgilari faqat ko‘rsatma sifatida ko‘rinadi, hech narsani qulflamaydi.
+    Yoqilganda, "faqat Premium" deb belgilangan joylar haqiqatda cheklanadi.
+  </p>
+
+  <h3 style="margin-top:1.5rem">Yuqori banner (e’lon)</h3>
+  <label class="check"><input type="checkbox" name="banner_enabled" {% if S.banner_enabled == '1' %}checked{% endif %}> Bannerni ko‘rsatish</label>
+  <div class="field"><label for="banner_text">Banner matni</label><input id="banner_text" type="text" name="banner_text" value="{{ S.banner_text }}" maxlength="300"></div>
+  <div class="field-row">
+    <div class="field"><label for="banner_cta_text">Tugma matni</label><input id="banner_cta_text" type="text" name="banner_cta_text" value="{{ S.banner_cta_text }}" maxlength="60"></div>
+    <div class="field"><label for="banner_cta_url">Tugma havolasi</label><input id="banner_cta_url" type="text" name="banner_cta_url" value="{{ S.banner_cta_url }}" maxlength="300"></div>
+  </div>
+  <div class="field" style="max-width:220px">
+    <label for="banner_target_date">Sanoq muddati (ixtiyoriy)</label>
+    <input id="banner_target_date" type="date" name="banner_target_date" value="{{ S.banner_target_date }}">
+    <span class="hint">To‘ldirilsa, bannerda shu sanagacha qolgan kun-soat ko‘rsatiladi. Bo‘sh qoldirilsa, faqat matn chiqadi.</span>
+  </div>
+
+  <div><button class="btn btn-primary" type="submit">Saqlash</button></div>
+</form>
+{% endblock %}
+

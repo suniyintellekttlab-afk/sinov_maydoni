@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Battle — {{ S.site_name }}{% endblock %}
+{% block body_class %}battle-page{% endblock %}
+{% block content %}
+<div class="page battle-main">
+  <div class="container battle-wrap" data-battle data-mode="{{ mode }}"{% if room_code %} data-room-code="{{ room_code }}"{% endif %}>
+    {% if mode == "lobby" %}
+    <div class="battle-hero">
+      <div>
+        <div class="eyebrow">⚔ MUSOBAQALAR</div>
+        <h1>Battle</h1>
+        <p>Do‘stingiz bilan bir xil savollarda bellashing. Har bir to‘g‘ri javob ochko olib keladi.</p>
+      </div>
+      <div class="battle-hero-icon">⚔</div>
+    </div>
+
+    <div class="battle-grid">
+      <section class="battle-card battle-choice-card">
+        <div class="battle-card-head"><span class="battle-step">01</span><div><h2>👥 Do‘st bilan</h2><p>Fan tanlang, Battle yarating va kodni do‘stingizga yuboring.</p></div></div>
+        <form id="battle-create-form" class="battle-form">
+          <label>Fan
+            <select name="subject_id">
+              <option value="">Aralash fanlar</option>
+              {% for subject in subjects %}<option value="{{ subject.id }}">{{ subject.name }}</option>{% endfor %}
+            </select>
+          </label>
+          <button class="btn btn-primary" type="submit">⚔ Battle yaratish</button>
+        </form>
+        <div id="battle-create-error" class="battle-error" hidden></div>
+        <div class="battle-divider"><span>yoki</span></div>
+        <form id="battle-join-form" class="battle-form battle-join-form">
+          <label>Do‘stingiz yuborgan Battle kodi
+            <input name="code" type="text" maxlength="6" autocomplete="off" placeholder="Masalan: A7K2QX" required>
+          </label>
+          <button class="btn btn-outline" type="submit">🔑 Kod bilan kirish</button>
+        </form>
+        <div id="battle-join-error" class="battle-error" hidden></div>
+      </section>
+
+      <section class="battle-card battle-choice-card battle-random-card">
+        <div class="battle-card-head"><span class="battle-step">02</span><div><h2>🔀 Random raqib</h2><p>Fan tanlang. Tizim aynan shu fanni tanlagan boshqa o‘yinchi bilan avtomatik ulaydi.</p></div></div>
+        <form id="battle-random-form" class="battle-form">
+          <label>Fan
+            <select name="subject_id">
+              <option value="">Aralash fanlar</option>
+              {% for subject in subjects %}<option value="{{ subject.id }}">{{ subject.name }}</option>{% endfor %}
+            </select>
+          </label>
+          <button id="battle-random-btn" class="btn btn-primary" type="submit">🔀 Random raqibni topish</button>
+        </form>
+        <div id="battle-random-status" class="battle-hint">Tanlangan fan bo‘yicha raqib qidiriladi.</div>
+        <div id="battle-random-error" class="battle-error" hidden></div>
+      </section>
+
+      <section class="battle-card battle-choice-card battle-bot-card">
+        <div class="battle-card-head"><span class="battle-step">03</span><div><h2>🤖 Bot bilan</h2><p>Fan tanlang va hech kimni kutmasdan darhol Botga qarshi o‘ynang.</p></div></div>
+        <form id="battle-bot-form" class="battle-form">
+          <label>Fan
+            <select name="subject_id">
+              <option value="">Aralash fanlar</option>
+              {% for subject in subjects %}<option value="{{ subject.id }}">{{ subject.name }}</option>{% endfor %}
+            </select>
+          </label>
+          <button id="battle-bot-btn" class="btn btn-outline" type="submit">🤖 Bot bilan o‘ynash</button>
+        </form>
+        <div id="battle-bot-status" class="battle-hint">Tanlangan fan bo‘yicha savollar olinadi.</div>
+        <div id="battle-bot-error" class="battle-error" hidden></div>
+      </section>
+    </div>
+
+    <section class="battle-how">
+      <div><b>1</b><span>Battle yarating</span><small>10 ta savol tayyorlanadi.</small></div>
+      <div><b>2</b><span>Kodni yuboring</span><small>Raqib kod orqali qo‘shiladi.</small></div>
+      <div><b>3</b><span>Bellashing</span><small>10 daqiqada ko‘proq to‘g‘ri javob bering.</small></div>
+    </section>
+
+    {% else %}
+    <section class="battle-room" data-room-panel>
+      <div class="battle-room-head">
+        <div><div class="eyebrow">⚔ BATTLE</div><h1>{{ room.subject_name or 'Aralash fanlar' }}</h1><p>{{ room.host_name }}{% if room.guest_name %} vs {{ room.guest_name }}{% else %} — raqib kutilmoqda{% endif %}</p></div>
+        {% if room.guest_username != '__battle_bot__' %}
+        <div class="battle-code-box"><small>Battle kodi</small><strong>{{ room.code }}</strong><button type="button" data-copy-code>Nusxalash</button></div>
+        {% else %}
+        <div class="battle-code-box battle-bot-box"><small>Raqib</small><strong>🤖 BOT</strong></div>
+        {% endif %}
+      </div>
+      <div class="battle-status" data-battle-status>Raqib kutilmoqda…</div>
+      <div class="battle-scorebar">
+        <div><span>Siz</span><strong data-my-score>0</strong><small data-my-progress>0/10</small></div>
+        <div class="battle-vs">VS</div>
+        <div><span>Raqib</span><strong data-op-score>0</strong><small data-op-progress>0/10</small></div>
+      </div>
+      <div class="battle-timer" data-timer>10:00</div>
+      <div class="battle-question" data-question-area></div>
+      <div class="battle-result" data-result hidden></div>
+    </section>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function(){
+  const root=document.querySelector('[data-battle]'); if(!root)return;
+  const csrf=document.querySelector('meta[name="csrf-token"]')?.content||'';
+  async function post(url, body){const r=await fetch(url,{method:'POST',headers:{'X-CSRF-Token':csrf,'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(body)});return await r.json();}
+  const create=document.getElementById('battle-create-form');
+  if(create){create.addEventListener('submit',async e=>{e.preventDefault();const d=await post('/musobaqalar/create',Object.fromEntries(new FormData(create)));if(d.ok)location.href=d.url;else{const x=document.getElementById('battle-create-error');x.textContent=d.error||'Xatolik';x.hidden=false;}});}
+  const join=document.getElementById('battle-join-form');
+  if(join){join.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const err=document.getElementById('battle-join-error');
+    const btn=join.querySelector('button');
+    err.hidden=true; btn.disabled=true;
+    try{
+      const data=Object.fromEntries(new FormData(join));
+      data.code=(data.code||'').trim().toUpperCase();
+      const d=await post('/musobaqalar/join',data);
+      if(d.ok) location.href=d.url;
+      else {err.textContent=d.error||'Battle kodini tekshirib qayta urinib ko‘ring.';err.hidden=false;btn.disabled=false;}
+    }catch(e){err.textContent='Server bilan bog‘lanib bo‘lmadi.';err.hidden=false;btn.disabled=false;}
+  });}
+  const randomForm=document.getElementById('battle-random-form');
+  if(randomForm){randomForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const btn=document.getElementById('battle-random-btn');
+    const status=document.getElementById('battle-random-status');
+    const err=document.getElementById('battle-random-error');
+    err.hidden=true; btn.disabled=true; status.textContent='🔎 Tanlangan fan bo‘yicha raqib qidirilmoqda…';
+    try{
+      const d=await post('/musobaqalar/random',Object.fromEntries(new FormData(randomForm)));
+      if(d.ok){status.textContent=d.matched?'⚔ Raqib topildi! Battle boshlanmoqda…':'⏳ Siz navbatdasiz. Shu fanni tanlagan raqib kirishi bilan avtomatik ulanadi…';location.href=d.url;}
+      else{status.textContent='Raqib topilmadi.';err.textContent=d.error||'Xatolik';err.hidden=false;btn.disabled=false;}
+    }catch(e){status.textContent='Ulanishda xatolik yuz berdi.';err.textContent='Server bilan bog‘lanib bo‘lmadi.';err.hidden=false;btn.disabled=false;}
+  });}
+  const botForm=document.getElementById('battle-bot-form');
+  if(botForm){botForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    const btn=document.getElementById('battle-bot-btn');
+    const status=document.getElementById('battle-bot-status');
+    const err=document.getElementById('battle-bot-error');
+    err.hidden=true; btn.disabled=true; status.textContent='🤖 Tanlangan fan bo‘yicha Bot tayyorlanmoqda…';
+    try{
+      const d=await post('/musobaqalar/bot',Object.fromEntries(new FormData(botForm)));
+      if(d.ok){status.textContent='⚔ Battle boshlandi!';location.href=d.url;}
+      else{status.textContent='Bot bilan Battle boshlanmadi.';err.textContent=d.error||'Xatolik';err.hidden=false;btn.disabled=false;}
+    }catch(e){status.textContent='Ulanishda xatolik yuz berdi.';err.textContent='Server bilan bog‘lanib bo‘lmadi.';err.hidden=false;btn.disabled=false;}
+  });}
+  if(root.dataset.mode!=='room')return;
+  const code=root.dataset.roomCode; const qs=root.querySelector('[data-question-area]'); const status=root.querySelector('[data-battle-status]'); const timer=root.querySelector('[data-timer]'); const result=root.querySelector('[data-result]');
+  let state=null,answered=false;
+  root.querySelector('[data-copy-code]')?.addEventListener('click',async function(){try{await navigator.clipboard.writeText(code);this.textContent='Nusxalandi';setTimeout(()=>this.textContent='Nusxalash',1200)}catch(e){}});
+  function render(s){state=s;root.querySelector('[data-my-score]').textContent=s.mine.correct;root.querySelector('[data-my-progress]').textContent=s.mine.answered+'/'+s.questions.length;if(s.opponent){root.querySelector('[data-op-score]').textContent=s.opponent.correct;root.querySelector('[data-op-progress]').textContent=s.opponent.answered+'/'+s.questions.length}else{root.querySelector('[data-op-score]').textContent='—';root.querySelector('[data-op-progress]').textContent='Raqib kutilmoqda'}
+    status.textContent=s.status==='waiting'?'Raqib kutilmoqda…':s.status==='active'?'Battle davom etmoqda':'Battle yakunlandi';
+    if(s.status==='finished'){showResult(s);return;}
+    if(s.status!=='active'){qs.innerHTML='<div class="battle-q-card"><h3>Raqib battle kodini kiritgach, jang avtomatik boshlanadi.</h3></div>';return;}
+    const q=s.questions.find(x=>!x.answered); if(!q){qs.innerHTML='<div class="battle-q-card"><h3>Siz barcha savollarga javob berdingiz. Raqib tugatishini kuting…</h3></div>';return;}
+    qs.innerHTML='<div class="battle-q-card"><h3>'+(q.position+1)+'. '+escapeHtml(q.text)+'</h3><div class="battle-options">'+q.options.map((o,i)=>'<button class="battle-option" data-choice="'+i+'">'+String.fromCharCode(65+i)+'. '+escapeHtml(String(o))+'</button>').join('')+'</div></div>';
+    qs.querySelectorAll('[data-choice]').forEach(b=>b.addEventListener('click',async()=>{if(answered)return;answered=true;qs.querySelectorAll('button').forEach(x=>x.disabled=true);const d=await fetch('/api/musobaqalar/'+encodeURIComponent(code)+'/answer',{method:'POST',headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify({question_id:q.id,choice:Number(b.dataset.choice)})}).then(r=>r.json());answered=false;if(!d.ok)alert(d.error||'Javob yuborilmadi');poll();}));
+  }
+  function showResult(s){const mine=s.mine,op=s.opponent;let title='Battle yakunlandi';if(op){if(mine.correct>op.correct)title='Siz ko‘proq to‘g‘ri javob berdingiz!';else if(mine.correct<op.correct)title='Raqib ko‘proq to‘g‘ri javob berdi.';else title='Natija durang.'}result.hidden=false;result.innerHTML='<h2>'+title+'</h2><p>Siz: <b>'+mine.correct+'</b> ta to‘g‘ri javob · Raqib: <b>'+(op?op.correct:'—')+'</b></p><a class="btn btn-primary" href="/musobaqalar">Yangi Battle</a>';qs.innerHTML='';status.textContent='Battle yakunlandi';}
+  function tick(){if(!state||!state.deadline||state.status!=='active'){return}const left=Math.max(0,state.deadline-Math.floor(Date.now()/1000));timer.textContent=Math.floor(left/60).toString().padStart(2,'0')+':'+(left%60).toString().padStart(2,'0');if(left<=0)poll();}
+  function escapeHtml(v){return v.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+  async function poll(){try{const r=await fetch('/api/musobaqalar/'+encodeURIComponent(code));const d=await r.json();if(d.ok){render(d);}}catch(e){}}
+  poll();setInterval(poll,2000);setInterval(tick,250);
+})();
+</script>
+
+{% endblock %}
+
+{% block head %}
+<style>
+.battle-main{padding:34px 0 70px}.battle-wrap{max-width:1040px}.battle-hero,.battle-room-head{display:flex;justify-content:space-between;gap:24px;align-items:center;background:linear-gradient(135deg,#fff,#f1f5fb);border:1px solid var(--line);border-radius:22px;padding:28px 32px;margin-bottom:18px}.battle-hero h1,.battle-room-head h1{font-size:2.3rem;margin:.2rem 0 .4rem}.battle-hero p,.battle-room-head p{max-width:650px;color:var(--ink-mute);margin:0;line-height:1.6}.eyebrow{font-size:.7rem;font-weight:900;letter-spacing:.1em;color:#1f4fb2}.battle-hero-icon{width:92px;height:92px;border-radius:24px;display:grid;place-items:center;background:#1f4fb2;color:#fff;font-size:2.5rem;box-shadow:0 12px 30px rgba(31,79,178,.22)}.battle-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.battle-card,.battle-how,.battle-room{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(14,27,51,.05)}.battle-card-head{display:flex;gap:13px;align-items:flex-start}.battle-step{width:34px;height:34px;border-radius:10px;background:#e8eef9;color:#1f4fb2;display:grid;place-items:center;font-weight:900;font-size:.72rem;flex:0 0 auto}.battle-card h2{font-size:1.05rem;margin:0 0 .25rem}.battle-card p{margin:0;color:var(--ink-mute);font-size:.82rem}.battle-form{display:grid;gap:13px;margin-top:20px}.battle-form label{display:grid;gap:6px;font-size:.75rem;font-weight:800;color:var(--ink)}.battle-form select,.battle-form input{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);font:inherit}.battle-error{margin-top:10px;padding:10px 12px;border-radius:9px;background:#fff0f0;color:#b42318;font-size:.8rem}.battle-how{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.battle-how div{display:grid;grid-template-columns:34px 1fr;column-gap:10px;align-items:center}.battle-how b{grid-row:span 2;width:34px;height:34px;border-radius:50%;background:#e8eef9;color:#1f4fb2;display:grid;place-items:center}.battle-how span{font-weight:900;font-size:.82rem}.battle-how small{color:var(--ink-mute);font-size:.7rem}.battle-code-box{display:grid;justify-items:center;gap:4px;background:#edf3ff;border-radius:15px;padding:13px 18px;min-width:130px}.battle-code-box small{font-size:.65rem;color:var(--ink-mute)}.battle-code-box strong{font-size:1.45rem;letter-spacing:.15em;color:#173b86}.battle-code-box button{border:0;background:none;color:#1f4fb2;font-weight:800;font-size:.7rem;cursor:pointer}.battle-status{text-align:center;background:#f4f7fb;border-radius:11px;padding:10px;color:var(--ink-mute);font-size:.8rem;font-weight:800}.battle-scorebar{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;gap:12px;margin:18px 0}.battle-scorebar>div:not(.battle-vs){display:grid;gap:2px;padding:13px 16px;background:#f5f7fb;border:1px solid var(--line);border-radius:14px}.battle-scorebar span{font-size:.72rem;color:var(--ink-mute)}.battle-scorebar strong{font-size:1.5rem;color:#1f4fb2}.battle-scorebar small{font-size:.65rem;color:var(--ink-mute)}.battle-vs{text-align:center;font-weight:900;color:#64748b}.battle-timer{text-align:center;font-size:1.35rem;font-weight:900;color:#173b86;margin:10px}.battle-question{max-width:760px;margin:0 auto}.battle-q-card{border:1px solid var(--line);border-radius:16px;padding:20px}.battle-q-card h3{font-size:1rem;line-height:1.55;margin:0 0 16px}.battle-options{display:grid;gap:9px}.battle-option{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);padding:12px 14px;border-radius:11px;cursor:pointer;font:inherit;color:var(--ink);transition:.15s}.battle-option:hover{border-color:#1f4fb2;background:#eef4ff}.battle-option:disabled{cursor:default;opacity:.6}.battle-result{margin-top:18px;padding:20px;border-radius:16px;background:#edf3ff;text-align:center}.battle-result h2{margin:.1rem 0 .4rem}.battle-result p{color:var(--ink-mute)}.battle-choice-card{display:flex;flex-direction:column;min-height:250px}.battle-choice-card .battle-form{margin-top:auto}.battle-divider{display:flex;align-items:center;gap:10px;margin:15px 0 2px;color:var(--ink-mute);font-size:.7rem;font-weight:800}.battle-divider:before,.battle-divider:after{content:"";height:1px;background:var(--line);flex:1}.battle-join-form{margin-top:0}.battle-join-form input{text-transform:uppercase;letter-spacing:.12em}.battle-random-card{border-color:#d7e6c3;background:linear-gradient(180deg,#fff,#f7fbf1)}.battle-hint{margin-top:12px;color:var(--ink-mute);font-size:.82rem;line-height:1.45}.battle-random-card .btn{margin-top:auto}.battle-bot-card{border-color:#dbe3f2;background:linear-gradient(180deg,#fff,#f7f9fd)}.battle-bot-card .btn{margin-top:auto}.battle-bot-box{background:#f1f5fb}
+@media(max-width:760px){.battle-grid,.battle-how{grid-template-columns:1fr}.battle-hero,.battle-room-head{align-items:flex-start;flex-direction:column}.battle-scorebar{grid-template-columns:1fr 45px 1fr}.battle-main{padding:18px 0 40px}}
+</style>
+{% endblock %}
+
+
+

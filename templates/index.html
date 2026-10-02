@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% from "_macros.html" import test_card, brand_mark %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <h1>Test yeching, natijani darhol ko‘ring</h1>
+      <p class="lead">Fanlar bo‘yicha vaqtli testlar, har bir savolga izoh va reytingda o‘z o‘rningiz. Xatolaringiz ustida ishlab, bilimingizni bosqichma-bosqich mustahkamlang.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="{{ url_for('tests_list') }}">Testlarni ko‘rish</a>
+        {% if me %}
+          <a class="btn btn-ghost" href="{{ url_for('profile_view') }}">Mening natijalarim</a>
+        {% else %}
+          <a class="btn btn-ghost" href="{{ url_for('register_view') }}">Ro‘yxatdan o‘tish</a>
+        {% endif %}
+      </div>
+      <p class="hero-note">Sinab ko‘rish uchun o‘ngdagi savolga javob bering. Buning uchun ro‘yxatdan o‘tish shart emas.</p>
+    </div>
+
+    <div class="sample" id="sample" data-url="{{ url_for('api_sample') }}" data-check="/api/namuna-savol/">
+      <div class="sample-inner" id="sample-inner" aria-live="polite">
+        <div class="skeleton" style="width:40%"></div>
+        <div class="skeleton" style="width:90%;height:22px;margin-top:.6rem"></div>
+        <div class="skeleton" style="width:70%;height:22px"></div>
+        <div class="skeleton" style="height:44px;margin-top:1rem"></div>
+        <div class="skeleton" style="height:44px"></div>
+        <div class="skeleton" style="height:44px"></div>
+        <noscript><p class="muted">Namunaviy savolni ko‘rish uchun JavaScript yoqilgan bo‘lishi kerak.</p></noscript>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head"><div><h2>Xizmatlar</h2><p>Testdan tashqari, o‘qishga yordam beradigan boshqa imkoniyatlar.</p></div></div>
+    <div class="feature-grid">
+      <a class="feature-card" style="--c: #0E8F8B" href="{{ url_for('ai_ustoz_view') }}">
+        <div class="feature-icon" aria-hidden="true">🤖</div>
+        <h3>AI Ustoz <span class="pill-badge pill-ai">AI</span></h3>
+        <p>Tushunmagan mavzuingizni so‘rang — sun’iy intellekt yordamchi tushuntirib beradi.</p>
+      </a>
+      <a class="feature-card" style="--c: #1F4FB2" href="/dtm-simulyatsiya">
+        <div class="feature-icon" aria-hidden="true">🎓</div>
+        <h3>DTM simulyatsiyasi</h3>
+        <p>Bir nechta fandan aralash, vaqt bilan cheklangan mashq testi — DTM formatiga yaqin.</p>
+      </a>
+      <a class="feature-card" style="--c: #F2A93B" href="/milliy-sertifikat">
+        <div class="feature-icon" aria-hidden="true">📜</div>
+        <h3>Milliy sertifikat</h3>
+        <p>Milliy sertifikat imtihoni formatidagi norasmiy mashq testi va tayyorgarlik.</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Fanlar</h2><p>O‘zingizga kerakli fanni tanlang.</p></div>
+      <a href="{{ url_for('tests_list') }}">Barcha testlar</a>
+    </div>
+    <div class="subject-grid">
+      {% for s in subjects %}
+      <a class="subject-card" style="--c: {{ s.color }}" href="{{ url_for('tests_list', fan=s.slug) }}">
+        <div class="subject-icon" aria-hidden="true">{{ s.icon }}</div>
+        <h3>{{ s.name }}</h3>
+        <p>{{ s.description }}</p>
+        <span class="count">{{ s.test_count }} ta test</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div><h2>Mashhur testlar</h2><p>Eng ko‘p yechilgan testlardan boshlang.</p></div>
+      <a href="{{ url_for('tests_list', saralash='mashhur') }}">Hammasini ko‘rish</a>
+    </div>
+    {% if tests %}
+    <div class="test-grid">{% for t in tests %}{{ test_card(t) }}{% endfor %}</div>
+    {% else %}
+    <div class="empty">Hozircha testlar qo‘shilmagan.</div>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container">
+    <div class="section-head"><div><h2>Qanday ishlaydi</h2></div></div>
+    <div class="steps">
+      <div class="step"><h3>Testni tanlang</h3><p>Fan, qiyinlik va vaqtga qarab o‘zingizga mos testni toping.</p></div>
+      <div class="step"><h3>Vaqt bilan yeching</h3><p>Javoblar avtomatik saqlanadi. Qiyin savollarni belgilab, keyin qaytishingiz mumkin.</p></div>
+      <div class="step"><h3>Xatolar ustida ishlang</h3><p>Natija sahifasida har bir savolning to‘g‘ri javobi va izohi ko‘rsatiladi.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="stat-strip">
+      <div><strong>{{ stats.users }}</strong><span>foydalanuvchi</span></div>
+      <div><strong>{{ stats.tests }}</strong><span>test</span></div>
+      <div><strong>{{ stats.questions }}</strong><span>savol</span></div>
+      <div><strong>{{ stats.attempts }}</strong><span>yakunlangan urinish</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight">
+  <div class="container two-col">
+    <div>
+      <div class="section-head"><div><h2>Reyting</h2><p>Eng yuqori ball to‘plaganlar.</p></div><a href="{{ url_for('leaderboard_view') }}">To‘liq reyting</a></div>
+      {% if top %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>#</th><th>Ism</th><th class="num">Ball</th></tr></thead>
+          <tbody>
+          {% for r in top %}
+            <tr {% if me and me.id == r.id %}class="me"{% endif %}>
+              <td><span class="rank rank-{{ loop.index if loop.index <= 3 else 'x' }}">{{ loop.index }}</span></td>
+              <td><div class="person"><span class="avatar">{{ r.full_name|initial }}</span>{{ r.full_name|short_name }}</div></td>
+              <td class="num"><b>{{ r.points|pct }}</b></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty">Reyting hali bo‘sh. Birinchi bo‘ling: birorta testni yeching.</div>
+      {% endif %}
+    </div>
+    <div>
+      <div class="section-head"><div><h2>Savol-javob</h2><p>Ko‘p so‘raladigan savollar.</p></div><a href="{{ url_for('faq_view') }}">Hammasi</a></div>
+      <div class="faq">
+        {% for f in faq %}
+        <details><summary>{{ f.question }}</summary><div class="answer">{{ f.answer }}</div></details>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% if news %}
+<section class="section">
+  <div class="container">
+    <div class="section-head"><div><h2>Yangiliklar</h2></div><a href="{{ url_for('news_list') }}">Barcha yangiliklar</a></div>
+    <div class="news-grid">
+      {% for n in news %}
+      <a class="news-card" href="{{ url_for('news_detail', slug=n.slug) }}">
+        <time>{{ n.created_at|dt('%d.%m.%Y') }}</time>
+        <h3>{{ n.title }}</h3>
+        <p>{{ n.summary }}</p>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if not me %}
+<section class="section-tight">
+  <div class="container">
+    <div class="cta">
+      <div><h2>Natijalaringizni saqlang</h2><p>Hisob yarating: urinishlar tarixi, reyting va sertifikatlar sizni kutmoqda.</p></div>
+      <a class="btn btn-accent" href="{{ url_for('register_view') }}">Hisob yaratish</a>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+

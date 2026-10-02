@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Ro‘yxatdan o‘tish — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="auth">
+    <div class="auth-side">
+      <h2>Bir daqiqada hisob yarating</h2>
+      <p>Natijalaringiz saqlanadi, reytingda qatnashasiz va sertifikat olasiz.</p>
+    </div>
+    <div class="auth-body">
+      <h1>Ro‘yxatdan o‘tish</h1>
+      {% if ref_code and not closed %}<p class="badge badge-ok" style="margin-bottom:1rem">🎁 Do‘stingiz taklifi orqali kirdingiz</p>{% endif %}
+      {% if closed %}
+        <div class="empty">Hozirda yangi ro‘yxatdan o‘tish vaqtincha yopilgan. Iltimos, keyinroq urinib ko‘ring.</div>
+      {% else %}
+      <form class="form" method="post" action="{{ url_for('register_view') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        {% if ref_code %}<input type="hidden" name="ref" value="{{ ref_code }}">{% endif %}
+        <div class="field"><label for="full_name">Ism va familiya</label><input id="full_name" type="text" name="full_name" value="{{ v.full_name }}" maxlength="80" required autocomplete="name"></div>
+        <div class="field"><label for="account_type">Maktabdagi holatingiz</label>
+          <select id="account_type" name="account_type" required>
+            <option value="">Tanlang…</option>
+            <option value="student" {% if v.account_type == 'student' %}selected{% endif %}>Maktab o‘quvchisiman</option>
+            <option value="teacher" {% if v.account_type == 'teacher' %}selected{% endif %}>O‘qituvchiman</option>
+            <option value="independent" {% if v.account_type == 'independent' %}selected{% endif %}>Maktab o‘quvchisi emasman</option>
+          </select>
+        </div>
+        <div id="school-fields">
+          <div class="field"><label for="school_id">Maktab</label>
+            <select id="school_id" name="school_id">
+              <option value="">Maktabni tanlang…</option>
+              {% for school in schools %}<option value="{{ school.id }}" {% if v.school_id|string == school.id|string %}selected{% endif %}>{{ school.name }}</option>{% endfor %}
+            </select>
+            {% if not schools %}<span class="hint">Hozircha maktablar ro‘yxati kiritilmagan. Admin bilan bog‘laning.</span>{% endif %}
+          </div>
+          <div class="field" id="school-class-field"><label for="school_class">Sinf (masalan, 11-B)</label><input id="school_class" type="text" name="school_class" value="{{ v.school_class }}" maxlength="20" placeholder="11-B"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="username">Foydalanuvchi nomi</label><input id="username" type="text" name="username" value="{{ v.username }}" maxlength="30" required autocapitalize="none" autocomplete="username"><span class="hint">Lotin harflari, raqam va _</span></div>
+          <div class="field"><label for="region">Hudud</label>
+            <select id="region" name="region"><option value="">Tanlanmagan</option>
+              {% for r in regions %}<option value="{{ r }}" {% if r == v.region %}selected{% endif %}>{{ r }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="field"><label for="email">Elektron pochta <span class="muted">(ixtiyoriy)</span></label><input id="email" type="email" name="email" value="{{ v.email }}" maxlength="120" autocomplete="email"></div>
+        <div class="field-row">
+          <div class="field"><label for="password">Parol</label><input id="password" type="password" name="password" minlength="6" required autocomplete="new-password"></div>
+          <div class="field"><label for="confirm">Parolni takrorlang</label><input id="confirm" type="password" name="confirm" minlength="6" required autocomplete="new-password"></div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Hisob yaratish</button>
+      </form>
+      <p class="auth-alt">Hisobingiz bormi? <a href="{{ url_for('login_view') }}">Kirish</a></p>
+      <script>
+        (function(){
+          const type=document.getElementById('account_type');
+          const schoolFields=document.getElementById('school-fields');
+          const school=document.getElementById('school_id');
+          const classField=document.getElementById('school-class-field');
+          const schoolClass=document.getElementById('school_class');
+          function update(){
+            const kind=type.value;
+            const needsSchool=kind==='student'||kind==='teacher';
+            schoolFields.hidden=!needsSchool;
+            school.required=needsSchool;
+            classField.hidden=kind!=='student';
+            schoolClass.required=kind==='student';
+          }
+          type.addEventListener('change',update);update();
+        })();
+      </script>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

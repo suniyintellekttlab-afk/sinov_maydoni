@@ -1,0 +1,24 @@
+# /etc/systemd/system/sinov.service
+[Unit]
+Description=Sinov Maydoni (gunicorn)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/sinov_maydoni
+Environment="COOKIE_SECURE=1"
+# Sertifikat QR-kodlari uchun saytning hammaga ochiq manzili:
+# Environment="PUBLIC_BASE_URL=https://example.uz"
+# Ixtiyoriy: Environment="ADMIN_PASSWORD=kuchli-parol"  (faqat birinchi ishga tushirishda ishlatiladi)
+# Ixtiyoriy: AI Ustoz uchun (bo'lmasa, sahifa "sozlanmagan" deb ko'rsatadi)
+# Environment="AI_API_KEY=sk-..."
+# Environment="AI_BASE_URL=https://api.openai.com/v1"
+# Environment="AI_MODEL=gpt-4o-mini"
+ExecStart=/var/www/sinov_maydoni/venv/bin/gunicorn -w 3 -b 127.0.0.1:8000 app:app
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+

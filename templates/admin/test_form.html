@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}{{ 'Savol to‘plamini tahrirlash' if test and test.id else 'Yangi savol to‘plami' }}{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><div><h1>{{ 'Savol to‘plamini tahrirlash' if test and test.id else 'Yangi savol to‘plami' }}</h1><p class="muted small">Fan + mavzu + qiyinlik shu to‘plamga bir marta belgilanadi. Keyingi savollarda qiyinlik qayta tanlanmaydi.</p></div><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_subject_bank', sid=test.subject_id) if test and test.subject_id else (url_for('admin_subject_bank', sid=pre_subject) if pre_subject else url_for('admin_subjects')) }}">Orqaga</a></div>
+<form class="form-card form" method="post" style="max-width:820px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="field"><label for="title">To‘plam nomi</label><input id="title" type="text" name="title" value="{{ test.title if test else '' }}" maxlength="150" placeholder="Masalan: Kimyo — Atom tuzilishi 1" required></div>
+  <div class="field"><label for="description">Qisqa tavsif</label><textarea id="description" name="description" maxlength="500" style="min-height:80px">{{ test.description if test else '' }}</textarea></div>
+  <div class="field-row">
+    <div class="field"><label for="subject_id">Fan</label><select id="subject_id" name="subject_id" required><option value="">Tanlang</option>{% for s in subjects %}<option value="{{ s.id }}" {% if (test and test.subject_id==s.id) or (not test and pre_subject==s.id) %}selected{% endif %}>{{ s.icon }} {{ s.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="topic_id">Mavzu (ixtiyoriy)</label><select id="topic_id" name="topic_id"><option value="">Mavzusiz</option>{% for tp in topics %}<option value="{{ tp.id }}" data-subject="{{ tp.subject_id }}" {% if (test and test.topic_id==tp.id) or (not test and pre_topic==tp.id) %}selected{% endif %}>{{ tp.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="difficulty">Qiyinlik</label><select id="difficulty" name="difficulty">{% for d in DIFFICULTIES %}<option value="{{ d }}" {% if test and test.difficulty==d %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label for="duration_min">Davomiyligi (daqiqa)</label><input id="duration_min" type="number" name="duration_min" min="1" max="300" value="{{ test.duration_min if test else 15 }}"></div>
+    <div class="field"><label for="pass_percent">O‘tish foizi</label><input id="pass_percent" type="number" name="pass_percent" min="1" max="100" value="{{ test.pass_percent if test else 60 }}"></div>
+  </div>
+  <label class="check"><input type="checkbox" name="shuffle" {% if not test or test.shuffle %}checked{% endif %}> Savollar tartibini aralashtirish</label>
+  <label class="check"><input type="checkbox" name="is_published" {% if not test or test.is_published %}checked{% endif %}> Saytda ishlatishga ruxsat berish</label>
+  <div class="row-actions"><button class="btn btn-primary" type="submit">{{ 'Saqlash' if test and test.id else 'To‘plamni yaratish' }}</button><a class="btn btn-ghost" href="{{ url_for('admin_subject_bank', sid=test.subject_id) if test and test.subject_id else (url_for('admin_subject_bank', sid=pre_subject) if pre_subject else url_for('admin_subjects')) }}">Bekor qilish</a></div>
+</form>
+<script>
+(function(){const s=document.getElementById('subject_id'),t=document.getElementById('topic_id'); if(!s||!t)return; function f(){const sid=s.value; [...t.options].forEach(o=>{if(!o.value){o.hidden=false;return} o.hidden=o.dataset.subject!==sid; if(o.hidden&&o.selected)o.selected=false;});} s.addEventListener('change',f); f();})();
+</script>
+{% endblock %}
+

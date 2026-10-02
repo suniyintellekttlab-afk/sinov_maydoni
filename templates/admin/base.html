@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_macros.html" import brand_mark, pager %}
+{% block title %}{% block admin_title %}Boshqaruv{% endblock %} — {{ S.site_name }} admin{% endblock %}
+{% block body_class %}admin-body{% endblock %}
+{% block header %}{% endblock %}
+{% block flash %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+{% set ep = request.endpoint or '' %}
+<div class="admin-shell">
+  <aside class="admin-side">
+    <a class="brand" href="{{ url_for('admin_dashboard') }}" style="padding:0">{{ brand_mark() }}<span>Admin</span></a>
+    <nav aria-label="Admin menyu">
+      <a href="{{ url_for('admin_dashboard') }}" {% if ep == 'admin_dashboard' %}aria-current="page"{% endif %}>Boshqaruv paneli</a>
+      <a href="{{ url_for('admin_subjects') }}" {% if ep == 'admin_subjects' %}aria-current="page"{% endif %}>Fanlar</a>
+      <a href="{{ url_for('admin_subjects') }}" {% if ep in ('admin_subjects', 'admin_subject_bank', 'admin_test_form', 'admin_questions', 'admin_question_edit') %}aria-current="page"{% endif %}>Savol banki</a>
+      <a href="{{ url_for('admin_schools') }}" {% if ep in ('admin_schools', 'admin_school_delete') %}aria-current="page"{% endif %}>Maktablar</a>
+      <a href="{{ url_for('admin_users') }}" {% if ep == 'admin_users' %}aria-current="page"{% endif %}>Foydalanuvchilar</a>
+      <a href="{{ url_for('admin_attempts') }}" {% if ep == 'admin_attempts' %}aria-current="page"{% endif %}>Natijalar</a>
+      {% set unread = unread_count() %}
+      <a href="{{ url_for('admin_messages') }}" {% if ep == 'admin_messages' %}aria-current="page"{% endif %}>Xabarlar {% if unread %}<span class="badge">{{ unread }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin_news') }}" {% if ep in ('admin_news', 'admin_news_form') %}aria-current="page"{% endif %}>Yangiliklar</a>
+      <a href="{{ url_for('admin_faq') }}" {% if ep == 'admin_faq' %}aria-current="page"{% endif %}>Savol-javob</a>
+      <a href="{{ url_for('admin_cutoffs') }}" {% if ep == 'admin_cutoffs' %}aria-current="page"{% endif %}>O‘tish ballari</a>
+      <a href="{{ url_for('admin_settings') }}" {% if ep == 'admin_settings' %}aria-current="page"{% endif %}>Sayt sozlamalari</a>
+      <div class="sep"></div>
+      <a href="{{ url_for('index') }}">Saytga qaytish</a>
+      <form method="post" action="{{ url_for('logout_view') }}" style="margin:0">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        <button class="side-link" type="submit">Chiqish</button>
+      </form>
+    </nav>
+  </aside>
+  <div class="admin-main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}<div class="flash flash-{{ 'ok' if cat == 'ok' else 'err' }}" role="status">{{ msg }}</div>{% endfor %}
+    {% endwith %}
+    {% block admin_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
+

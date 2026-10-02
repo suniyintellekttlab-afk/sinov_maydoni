@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Savol-javob — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container-narrow">
+  <div class="page-head"><h1>Ko‘p so‘raladigan savollar</h1><p>Kerakli javobni topa olmasangiz, <a href="{{ url_for('contact_view') }}">bizga yozing</a>.</p></div>
+  {% if items %}
+  <div class="faq">
+    {% for f in items %}<details><summary>{{ f.question }}</summary><div class="answer">{{ f.answer }}</div></details>{% endfor %}
+  </div>
+  {% else %}<div class="empty">Hozircha savollar qo‘shilmagan.</div>{% endif %}
+</div>
+{% endblock %}
+

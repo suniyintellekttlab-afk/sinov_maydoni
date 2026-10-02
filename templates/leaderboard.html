@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Reyting — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <h1>Reyting{% if subject %}: {{ subject.name }}{% endif %}</h1>
+    <p>Ball — har bir testdagi eng yaxshi natijangizning yig‘indisi. Ball teng bo‘lsa, tezroq yechgan yuqori turadi.</p>
+  </div>
+
+  <div class="tabs" style="margin-top:0" role="navigation" aria-label="Fan bo‘yicha reyting">
+    <a class="tab" style="text-decoration:none" href="{{ url_for('leaderboard_view') }}" aria-pressed="{{ 'true' if not subject else 'false' }}">Umumiy</a>
+    {% for s in subjects %}
+    <a class="tab" style="text-decoration:none" href="{{ url_for('leaderboard_view', fan=s.slug) }}" aria-pressed="{{ 'true' if subject and subject.id == s.id else 'false' }}">{{ s.name }}</a>
+    {% endfor %}
+  </div>
+
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>#</th><th>Ishtirokchi</th><th>Maktab / holati</th><th class="num">Testlar</th><th class="num">O‘rtacha</th><th class="num">Ball</th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr {% if me and me.id == r.id %}class="me"{% endif %}>
+          <td><span class="rank rank-{{ loop.index if loop.index <= 3 else 'x' }}">{{ loop.index }}</span></td>
+          <td><div class="person"><span class="avatar">{{ r.full_name|initial }}</span>{{ r.full_name|short_name }}</div></td>
+          <td class="muted">
+            {% if r.account_type == 'student' %}
+              {{ r.school_name or 'Maktab belgilanmagan' }}{% if r.school_class %}, {{ r.school_class }} sinf{% endif %}
+            {% elif r.account_type == 'teacher' %}
+              {{ r.school_name or 'Maktab belgilanmagan' }} · O‘qituvchi
+            {% elif r.account_type == 'independent' %}
+              Maktab o‘quvchisi emas
+            {% else %}
+              Ma’lumot kiritilmagan
+            {% endif %}
+          </td>
+          <td class="num">{{ r.tests_taken }}</td>
+          <td class="num">{{ r.avg_percent|pct }}%</td>
+          <td class="num"><b>{{ r.points|pct }}</b></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty">Bu bo‘lim bo‘yicha reyting hali bo‘sh.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

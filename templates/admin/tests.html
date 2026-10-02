@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import diff_badge %}
+{% block admin_title %}Savol to‘plamlari{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <h1>Savol to‘plamlari</h1>
+  <div class="actions">
+    <form class="inline-form" method="get" action="{{ url_for('admin_tests') }}">
+      <select name="fan" aria-label="Fan bo‘yicha" data-autosubmit>
+        <option value="">Barcha fanlar</option>
+        {% for s in subjects %}<option value="{{ s.id }}" {% if fan == s.id|string %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+      </select>
+    </form>
+    <a class="btn btn-primary" href="{{ url_for('admin_test_form') }}">Yangi savol to‘plami</a>
+  </div>
+</div>
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>To‘plam</th><th>Fan</th><th class="num">Savollar</th><th class="num">Vaqt</th><th>Qiyinlik</th><th>Holat</th><th class="num">Urinishlar</th><th></th></tr></thead>
+    <tbody>
+    {% for t in tests %}
+      <tr>
+        <td><a href="{{ url_for('admin_questions', test_id=t.id) }}"><b>{{ t.title }}</b></a></td>
+        <td>{{ t.subject_icon }} {{ t.subject_name }}</td>
+        <td class="num">{{ t.q_count }}</td>
+        <td class="num">{{ t.duration_min }} daq</td>
+        <td>{{ diff_badge(t.difficulty) }}</td>
+        <td>{% if t.is_published %}<span class="badge badge-ok">e’lon qilingan</span>{% else %}<span class="badge">qoralama</span>{% endif %}</td>
+        <td class="num">{{ t.attempts_count }}</td>
+        <td>
+          <div class="row-actions">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_questions', test_id=t.id) }}">Savollar</a>
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_test_form', test_id=t.id) }}">Tahrirlash</a>
+            <form method="post" action="{{ url_for('admin_test_toggle', test_id=t.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-ghost btn-sm" type="submit">{{ 'Yashirish' if t.is_published else 'E’lon qilish' }}</button></form>
+            <form method="post" action="{{ url_for('admin_test_delete', test_id=t.id) }}" data-confirm="«{{ t.title }}» testi, uning savollari va natijalari o‘chiriladi. Davom etasizmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form>
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="8" class="center muted">Testlar topilmadi.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

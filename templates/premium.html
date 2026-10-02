@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Premium — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container-narrow">
+  <div class="page-head">
+    <h1>👑 Premium</h1>
+    <p>Qo‘shimcha imkoniyatlar to‘plami: AI Ustoz, AI tahlil va boshqalar.</p>
+  </div>
+
+  {% if S.premium_enabled != '1' %}
+  <div class="panel" style="border-color:var(--ok)">
+    <span class="badge badge-ok">Hozircha hammasi bepul</span>
+    <p style="margin:.7rem 0 0">
+      Hozirgi vaqtda barcha imkoniyatlar (jumladan AI Ustoz ham) barcha foydalanuvchilarga
+      <b>mutlaqo bepul</b>. Premium tizimi keyinroq ishga tushiriladi — shu paytgacha
+      do‘stlaringizni taklif qilib, kunlarni oldindan yig‘ib qo‘yishingiz mumkin.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="feature-grid" style="margin-top:1.25rem">
+    <div class="feature-card" style="--c:#0E8F8B"><div class="feature-icon">🤖</div><h3>AI Ustoz</h3><p>Cheksiz savol-javob yordamchisi.</p></div>
+    <div class="feature-card" style="--c:#1F4FB2"><div class="feature-icon">📊</div><h3>AI natija tahlili</h3><p>Har bir testdan keyin shaxsiy tavsiya.</p></div>
+    <div class="feature-card" style="--c:#F2A93B"><div class="feature-icon">🎓</div><h3>Universitet ma’lumotlari</h3><p>Yo‘nalishlarning o‘tgan yillardagi o‘tish ballari.</p></div>
+  </div>
+
+  <div class="panel" style="margin-top:1.25rem">
+    <h3>🎁 Do‘st taklif qiling — 7 kun Premium oling</h3>
+    <p class="muted">Havolangiz orqali ro‘yxatdan o‘tgan har bir do‘stingiz uchun sizga <b>7 kunlik Premium</b> beriladi.</p>
+    {% if me %}
+      {% if premium_active %}<p><span class="badge badge-ok">👑 Premium faol: {{ me.premium_until|dt('%d.%m.%Y') }} gacha</span></p>{% endif %}
+      <div class="referral-row">
+        <input type="text" readonly value="{{ referral_link }}" onclick="this.select()">
+        <button class="btn btn-ghost btn-sm" type="button" data-copy="{{ referral_link }}">Nusxalash</button>
+        <a class="btn btn-primary btn-sm" target="_blank" rel="noopener"
+           href="https://t.me/share/url?url={{ referral_link|urlencode }}&text={{ ('Men ' ~ S.site_name ~ ' platformasida testlar yechyapman — sen ham qo‘shil!')|urlencode }}">Telegramda ulashish</a>
+      </div>
+    {% else %}
+      <a class="btn btn-primary" href="{{ url_for('login_view', next='/premium') }}">Havola olish uchun kiring</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+

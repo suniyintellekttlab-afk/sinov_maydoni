@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager %}
+{% block title %}Yangiliklar — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><h1>Yangiliklar</h1><p>Platformadagi yangilanishlar va foydali maslahatlar.</p></div>
+  {% if items %}
+  <div class="news-grid">
+    {% for n in items %}
+    <a class="news-card" href="{{ url_for('news_detail', slug=n.slug) }}">
+      <time>{{ n.created_at|dt('%d.%m.%Y') }}</time>
+      <h3>{{ n.title }}</h3>
+      <p>{{ n.summary }}</p>
+    </a>
+    {% endfor %}
+  </div>
+  {{ pager(page, pages) }}
+  {% else %}
+  <div class="empty">Hozircha yangiliklar yo‘q.</div>
+  {% endif %}
+</div>
+{% endblock %}
+

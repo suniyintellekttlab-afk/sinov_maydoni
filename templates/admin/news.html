@@ -1,0 +1,27 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Yangiliklar{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>Yangiliklar</h1><a class="btn btn-primary" href="{{ url_for('admin_news_form') }}">Yangi yangilik</a></div>
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Sarlavha</th><th>Sana</th><th>Holat</th><th></th></tr></thead>
+    <tbody>
+    {% for n in rows %}
+      <tr>
+        <td><b>{{ n.title }}</b><br><span class="muted small">{{ n.summary }}</span></td>
+        <td class="nowrap">{{ n.created_at|dt('%d.%m.%Y') }}</td>
+        <td>{% if n.is_published %}<span class="badge badge-ok">e’lon qilingan</span>{% else %}<span class="badge">qoralama</span>{% endif %}</td>
+        <td><div class="row-actions">
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('news_detail', slug=n.slug) }}" target="_blank" rel="noopener">Ko‘rish</a>
+          <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_news_form', news_id=n.id) }}">Tahrirlash</a>
+          <form method="post" action="{{ url_for('admin_news_delete', news_id=n.id) }}" data-confirm="Yangilik o‘chirilsinmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form>
+        </div></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="4" class="center muted">Yangiliklar yo‘q.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

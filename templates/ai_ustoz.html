@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}AI Ustoz — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container-narrow ai-page">
+  <div class="page-head" style="padding-bottom:.5rem">
+    <div class="crumbs"><a href="{{ url_for('tests_list') }}">Testlar</a> / AI Ustoz</div>
+    <h1>🤖 AI Ustoz</h1>
+    <p>Fanlardan tushunmagan mavzuingizni so‘rang — AI Ustoz qisqa va tushunarli tarzda tushuntirib beradi.</p>
+  </div>
+
+  {% if not premium_access %}
+  <div class="empty" style="text-align:left;padding:1.25rem 1.5rem">
+    <b>🔒 AI Ustoz faqat Premium foydalanuvchilar uchun.</b>
+    <p class="muted small" style="margin:.4rem 0 0">
+      Do‘st taklif qilib 7 kunlik Premium oling: <a href="{{ url_for('premium_view') }}">Premium sahifasi</a>.
+    </p>
+  </div>
+  {% endif %}
+
+  {% if not ai_ready %}
+  <div class="empty" style="text-align:left;padding:1.25rem 1.5rem">
+    <b>AI Ustoz hali sozlanmagan.</b>
+    <p class="muted small" style="margin:.4rem 0 0">
+      Administrator serverda <code>AI_API_KEY</code> (va ixtiyoriy <code>AI_BASE_URL</code>, <code>AI_MODEL</code>)
+      muhit o‘zgaruvchilarini qo‘shishi kerak. Sozlangach, bu sahifa avtomatik ishga tushadi.
+    </p>
+  </div>
+  {% endif %}
+
+  <div class="chat-card">
+    <div class="chat-log" id="chat-log" aria-live="polite">
+      {% if not history %}
+      <div class="chat-empty muted small">Hali suhbat yo‘q. Pastdan savolingizni yozing, masalan: «Pifagor teoremasini tushuntirib bering».</div>
+      {% endif %}
+      {% for m in history %}
+        <div class="chat-msg chat-{{ m.role }}">
+          <div class="chat-bubble">{{ m.content }}</div>
+        </div>
+      {% endfor %}
+    </div>
+    <form class="chat-form" id="chat-form" data-url="{{ url_for('ai_ustoz_send') }}">
+      <textarea id="chat-input" placeholder="Savolingizni yozing…" maxlength="1500" rows="1" {% if not ai_ready or not premium_access %}disabled{% endif %} required></textarea>
+      <button class="btn btn-primary" type="submit" id="chat-send" {% if not ai_ready or not premium_access %}disabled{% endif %}>Yuborish</button>
+    </form>
+    <div class="chat-status muted small" id="chat-status"></div>
+  </div>
+
+  {% if history %}
+  <form method="post" action="{{ url_for('ai_ustoz_clear') }}" style="margin-top:1rem" data-confirm="Suhbat tarixi butunlay o‘chiriladi. Davom etasizmi?">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <button class="btn btn-ghost btn-sm" type="submit">Suhbatni tozalash</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
+

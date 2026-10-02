@@ -1,0 +1,87 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}O‘tish ballari{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>O‘tish ballari (universitet qabul chegaralari)</h1></div>
+<p class="muted small" style="max-width:70ch;margin:-.5rem 0 1.25rem">
+  Har yil va ta’lim yo‘nalishi uchun grant hamda kontrakt ballarini kiriting. Bu yozuvlar foydalanuvchiga
+  ochiq o‘tish ballari sahifasida ko‘rinadi; bir yil va yo‘nalish uchun bitta qator qo‘shing.
+</p>
+
+<section class="csv-import-box">
+  <h2>CSV fayllaridan import</h2>
+  <p class="muted small">Universitetlar: {{ university_count }} · Import qilingan o‘tish ballari: {{ imported_count }}. Uchala faylni tanlang; import joriy CSV natijalarini yangilaydi, qo‘lda kiritilgan eski yozuvlarga tegmaydi.</p>
+  <form class="form" method="post" enctype="multipart/form-data" action="{{ url_for('admin_cutoffs_import') }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="field-row-3 field-row">
+      <div class="field"><label>Universitetlar CSV</label><input type="file" name="universities_csv" accept=".csv,text/csv" required></div>
+      <div class="field"><label>Yo‘nalishlar CSV</label><input type="file" name="directions_csv" accept=".csv,text/csv" required></div>
+      <div class="field"><label>O‘tish ballari CSV</label><input type="file" name="results_csv" accept=".csv,text/csv" required></div>
+    </div>
+    <button class="btn btn-primary" type="submit">CSV fayllarini yuklash</button>
+  </form>
+</section>
+
+<details class="add-box" {% if not rows %}open{% endif %}>
+  <summary>Yangi yozuv qo‘shish</summary>
+  <div>
+    <form class="form" method="post" action="{{ url_for('admin_cutoffs') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field-row-3 field-row">
+        <div class="field"><label>Yil</label><input type="number" name="year" min="2000" max="2100" value="{{ now_year }}" required></div>
+        <div class="field"><label>Universitet nomi</label><input type="text" name="university_name" maxlength="200" required></div>
+        <div class="field"><label>Yo‘nalish nomi (ixtiyoriy)</label><input type="text" name="yonalish_name" maxlength="200" placeholder="masalan: Filologiya"></div>
+      </div>
+      <div class="field-row-3 field-row">
+        <div class="field"><label>1-fan</label>
+          <select name="subject1_id" required>
+            <option value="">Tanlang</option>
+            {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+          </select></div>
+        <div class="field"><label>2-fan</label>
+          <select name="subject2_id" required>
+            <option value="">Tanlang</option>
+            {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+          </select></div>
+        <div class="field"><label>Yo‘nalish shifri</label><input type="text" name="direction_code" maxlength="30" placeholder="masalan: 61010300"></div>
+      </div>
+      <div class="field-row-3 field-row">
+        <div class="field"><label>Grant o‘tish balli</label><input type="text" name="grant_ball" placeholder="masalan: 169,2"></div>
+        <div class="field"><label>Kontrakt o‘tish balli</label><input type="text" name="contract_ball" placeholder="masalan: 123,2"></div>
+        <div class="field"><label>Eski yozuv uchun umumiy ball</label><input type="text" name="cutoff_ball" placeholder="ixtiyoriy"></div>
+      </div>
+      <div class="field-row-3 field-row">
+        <div class="field"><label>Hudud</label><input type="text" name="region_name" maxlength="100" placeholder="masalan: Andijon"></div>
+        <div class="field"><label>Ta’lim shakli</label><input type="text" name="education_form" maxlength="60" placeholder="masalan: Kunduzgi"></div>
+        <div class="field"><label>Ta’lim tili</label><input type="text" name="language" maxlength="60" placeholder="masalan: O‘zbek"></div>
+      </div>
+      <div class="field-row-3 field-row">
+        <div class="field"><label>Grant o‘rinlari</label><input type="number" name="grant_places" min="0"></div>
+        <div class="field"><label>Kontrakt o‘rinlari</label><input type="number" name="contract_places" min="0"></div>
+      </div>
+      <div><button class="btn btn-primary" type="submit">Qo‘shish</button></div>
+    </form>
+  </div>
+</details>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Yil</th><th>Universitet</th><th>Yo‘nalish</th><th>Fanlar</th><th>Grant</th><th>Kontrakt</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td>{{ r.year }}</td>
+        <td><b>{{ r.university_name }}</b></td>
+        <td>{{ r.yonalish_name or '—' }}</td>
+        <td>{{ r.s1_name }} · {{ r.s2_name }}</td>
+        <td class="num"><b>{{ r.grant_ball|pct if r.grant_ball is not none else '—' }}</b></td>
+        <td class="num"><b>{% if r.contract_ball is not none %}{{ r.contract_ball|pct }}{% elif r.grant_ball is none %}{{ r.cutoff_ball|pct }} <small>(umumiy)</small>{% else %}—{% endif %}</b></td>
+        <td><form method="post" action="{{ url_for('admin_cutoff_delete', cid=r.id) }}" data-confirm="Bu yozuv o‘chirilsinmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form></td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="center muted">Hozircha yozuvlar yo‘q.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

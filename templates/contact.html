@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Aloqa — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><h1>Aloqa</h1><p>Taklif, xato haqida xabar yoki parolni tiklash uchun yozing.</p></div>
+  <div class="contact-grid" style="padding-bottom:2rem">
+    <div class="panel">
+      <ul class="contact-list">
+        {% if S.phone %}<li><b>Telefon</b><a href="tel:{{ S.phone|replace(' ', '') }}">{{ S.phone }}</a></li>{% endif %}
+        {% if S.email %}<li><b>Elektron pochta</b><a href="mailto:{{ S.email }}">{{ S.email }}</a></li>{% endif %}
+        {% if S.address %}<li><b>Manzil</b>{{ S.address }}</li>{% endif %}
+        {% if S.telegram %}<li><b>Telegram</b><a href="{{ S.telegram }}" target="_blank" rel="noopener">{{ S.telegram }}</a></li>{% endif %}
+        {% if S.working_hours %}<li><b>Ish vaqti</b>{{ S.working_hours }}</li>{% endif %}
+      </ul>
+    </div>
+    <form class="form-card form" method="post" action="{{ url_for('contact_view') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="hp" aria-hidden="true"><label>Veb-sayt<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+      <div class="field-row">
+        <div class="field"><label for="c-name">Ismingiz</label><input id="c-name" type="text" name="name" value="{{ v.name or (me.full_name if me else '') }}" maxlength="80" required></div>
+        <div class="field"><label for="c-contact">Telefon yoki pochta</label><input id="c-contact" type="text" name="contact" value="{{ v.contact }}" maxlength="120" required></div>
+      </div>
+      <div class="field"><label for="c-subject">Mavzu</label><input id="c-subject" type="text" name="subject" value="{{ v.subject }}" maxlength="120"></div>
+      <div class="field"><label for="c-body">Xabar</label><textarea id="c-body" name="body" maxlength="3000" required>{{ v.body }}</textarea></div>
+      <button class="btn btn-primary" type="submit">Yuborish</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Xabarlar{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>Aloqa xabarlari</h1></div>
+{% for m in rows %}
+<article class="msg-item {% if not m.is_read %}unread{% endif %}">
+  <header>
+    <div><b>{{ m.name }}</b> <span class="muted">{{ m.contact }}</span></div>
+    <span class="muted small">{{ m.created_at|dt }}</span>
+  </header>
+  {% if m.subject %}<h4>{{ m.subject }}</h4>{% endif %}
+  <p>{{ m.body }}</p>
+  <div class="row-actions">
+    <form method="post" action="{{ url_for('admin_message_action', mid=m.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_read"><button class="btn btn-ghost btn-sm" type="submit">{{ 'O‘qilmagan deb belgilash' if m.is_read else 'O‘qildi deb belgilash' }}</button></form>
+    <form method="post" action="{{ url_for('admin_message_action', mid=m.id) }}" data-confirm="Xabar o‘chirilsinmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="delete"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form>
+  </div>
+</article>
+{% else %}
+<div class="empty">Hozircha xabarlar yo‘q.</div>
+{% endfor %}
+{{ pager(page, pages) }}
+{% endblock %}
+

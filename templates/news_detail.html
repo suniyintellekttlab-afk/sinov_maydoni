@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ item.title }} — {{ S.site_name }}{% endblock %}
+{% block description %}{{ item.summary }}{% endblock %}
+{% block content %}
+<div class="container-narrow">
+  <div class="page-head">
+    <div class="crumbs"><a href="{{ url_for('news_list') }}">Yangiliklar</a></div>
+    <h1>{{ item.title }}</h1>
+    <p class="muted">{{ item.created_at|dt('%d.%m.%Y') }}{% if not item.is_published %} <span class="badge badge-warn">e’lon qilinmagan</span>{% endif %}</p>
+  </div>
+  <article class="prose">{{ item.body|paras }}</article>
+</div>
+{% if others %}
+<div class="container" style="margin-top:3rem">
+  <div class="section-head"><h2>Boshqa yangiliklar</h2></div>
+  <div class="news-grid">
+    {% for n in others %}
+    <a class="news-card" href="{{ url_for('news_detail', slug=n.slug) }}"><time>{{ n.created_at|dt('%d.%m.%Y') }}</time><h3>{{ n.title }}</h3><p>{{ n.summary }}</p></a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+

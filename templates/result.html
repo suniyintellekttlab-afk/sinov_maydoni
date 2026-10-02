@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% from "_macros.html" import diff_badge %}
+{% block title %}Natija: {{ test.title }} — {{ S.site_name }}{% endblock %}
+{% block content %}
+{% set C = 439.82 %}
+<div class="container" style="padding-top:2rem">
+  <div class="crumbs">
+    <a href="{{ url_for('tests_list') }}">Testlar</a> /
+    <a href="{{ url_for('test_detail', test_id=test.id) }}">{{ test.title }}</a>
+  </div>
+
+  <div class="result-head">
+    <div class="ring {% if not attempt.passed %}fail{% endif %}" role="img" aria-label="Natija {{ attempt.percent|pct }} foiz">
+      <svg viewBox="0 0 160 160">
+        <circle class="track" cx="80" cy="80" r="70" fill="none" stroke-width="14"/>
+        <circle class="value" cx="80" cy="80" r="70" fill="none" stroke-width="14"
+                stroke-dasharray="{{ C }}" stroke-dashoffset="{{ (C * (1 - attempt.percent / 100))|round(2) }}"/>
+      </svg>
+      <div class="ring-label"><div><strong>{{ attempt.percent|pct }}%</strong><span>{{ attempt.correct_count }} / {{ attempt.total }}</span></div></div>
+    </div>
+    <div>
+      <div class="verdict">
+        {% if attempt.passed %}Tabriklaymiz, test topshirildi!{% else %}Bu safar o‘tish balliga yetmadi{% endif %}
+      </div>
+      <p class="muted" style="margin:0">
+        {{ test.title }}. O‘tish balli — {{ test.pass_percent }}%.
+        {% if owner and owner.id != me.id %}Foydalanuvchi: <b>{{ owner.full_name }}</b>.{% endif %}
+      </p>
+      <ul class="stat-list">
+        <li>To‘g‘ri: <b>{{ counts.correct }}</b></li>
+        <li>Noto‘g‘ri: <b>{{ counts.wrong }}</b></li>
+        <li>Javobsiz: <b>{{ counts.skipped }}</b></li>
+        <li>Sarflangan vaqt: <b>{{ attempt.duration_sec|dur }}</b></li>
+        {% if avg is not none %}<li>Barchaning o‘rtacha natijasi: <b>{{ avg|pct }}%</b></li>{% endif %}
+        {% if attempt.xp_earned %}<li class="xp-earned">⚡ +{{ attempt.xp_earned }} XP</li>{% endif %}
+      </ul>
+      <div class="result-actions">
+        {% if owner and owner.id == me.id %}
+        <form method="post" action="{{ url_for('test_start', test_id=test.id) }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn btn-primary" type="submit">Qayta yechish</button>
+        </form>
+        {% endif %}
+        {% if attempt.passed %}<a class="btn btn-accent" href="{{ url_for('certificate_view', attempt_id=attempt.id) }}" target="_blank" rel="noopener">Sertifikat</a>{% endif %}
+        <a class="btn btn-ghost" href="{{ url_for('tests_list', fan=test.subject_slug) }}">Boshqa testlar</a>
+      </div>
+    </div>
+  </div>
+
+  {% if dtm_blocks %}
+  <section class="panel" style="margin-top:2rem">
+    <h3>Ball taqsimoti (blok bo‘yicha)</h3>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Fan</th><th>Blok</th><th class="num">To‘g‘ri</th><th class="num">Foiz</th></tr></thead>
+        <tbody>
+        {% for b in dtm_blocks %}
+          <tr>
+            <td>{{ b.subject.icon }} <b>{{ b.subject.name }}</b></td>
+            <td><span class="badge {% if b.label == 'majburiy' %}badge-dark{% else %}badge-ok{% endif %}">{{ b.label }}</span></td>
+            <td class="num">{{ b.correct }}/{{ b.total }}</td>
+            <td class="num"><b>{{ b.percent }}%</b></td>
+          </tr>
+        {% endfor %}
+          <tr><td colspan="2"><b>Jami</b></td><td class="num"><b>{{ attempt.correct_count }}/{{ attempt.total }}</b></td><td class="num"><b>{{ attempt.percent|pct }}%</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if universities %}
+  <section class="panel" style="margin-top:1rem">
+    <h3>Universitetlarga kirish maslahati</h3>
+    <p class="muted small" style="margin-top:-.5rem">
+      Tanlangan fanlaringizga mos yo‘nalishlarning o‘tgan yillardagi <b>real o‘tish ballari</b>.
+      Ballaringizni o‘zingiz solishtirib ko‘ring — bu ma’lumot kafolat emas, faqat o‘tgan yillar tarixi.
+    </p>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Universitet</th><th>Yo‘nalish</th><th>O‘tish ballari (yillar bo‘yicha)</th><th class="num">O‘zgarish</th></tr></thead>
+        <tbody>
+        {% for u in universities %}
+          <tr>
+            <td><b>{{ u.university_name }}</b></td>
+            <td>{{ u.yonalish_name or '—' }}</td>
+            <td>{% for y in u.years %}<span class="badge" style="margin-right:.3rem">{{ y.year }}: <b>{{ y.ball|pct }}</b></span>{% endfor %}</td>
+            <td class="num">
+              {% if u.trend is none %}<span class="muted">—</span>
+              {% elif u.trend < 0 %}<span style="color:var(--ok);font-weight:800">▼ {{ (-u.trend)|pct }}</span>
+              {% elif u.trend > 0 %}<span style="color:var(--bad);font-weight:800">▲ {{ u.trend|pct }}</span>
+              {% else %}<span class="muted">0</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if topics %}
+  <section class="panel" style="margin-top:1rem">
+    <h3>Mavzular bo‘yicha tahlil</h3>
+    <div class="topic-list">
+      {% for t in topics %}
+      <div class="topic-row">
+        <div class="topic-name">{{ t.topic }} {% if t.weak %}<span class="badge badge-bad">kuchsiz</span>{% endif %}</div>
+        <div class="bar-track"><i style="width:{{ t.percent }}%; background: {{ 'var(--bad)' if t.weak else 'var(--ok)' }}"></i></div>
+        <div class="topic-pct">{{ t.correct }}/{{ t.total }} · {{ t.percent }}%</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="panel" style="margin-top:1rem">
+    <div class="next-steps">
+      <h3 style="margin:0">Keyingi qadamlar</h3>
+      <div class="next-steps-grid">
+        <a class="btn btn-ghost btn-sm" href="#review" data-jump-wrong>Xatolar ustida ishlash</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('tests_list') }}">Yangi test boshlash</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('tests_list') }}">Savol bankiga qaytish</a>
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('profile_view') }}">Barcha natijalar</a>
+      </div>
+      {% if ai_ready %}
+      <div class="ai-analysis" id="ai-analysis" data-url="{{ url_for('result_ai_analysis', attempt_id=attempt.id) }}">
+        <button class="btn btn-outline btn-sm" type="button" id="ai-analysis-btn">🤖 AI Ustozdan tahlil olish</button>
+        <div id="ai-analysis-text" class="ai-analysis-text" hidden></div>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <h2 style="margin-top:2.5rem;margin-bottom:0">Savollar tahlili</h2>
+  <div class="tabs" role="group" aria-label="Savollarni saralash">
+    <button class="tab" type="button" data-filter="all" aria-pressed="true">Hammasi ({{ items|length }})</button>
+    <button class="tab" type="button" data-filter="wrong" aria-pressed="false">Noto‘g‘ri ({{ counts.wrong }})</button>
+    <button class="tab" type="button" data-filter="skipped" aria-pressed="false">Javobsiz ({{ counts.skipped }})</button>
+    <button class="tab" type="button" data-filter="correct" aria-pressed="false">To‘g‘ri ({{ counts.correct }})</button>
+  </div>
+
+  <div class="review" id="review">
+    {% for it in items %}
+    <article class="review-item {{ it.state }}" data-state="{{ it.state }}">
+      <h4><span class="n">{{ it.n }}.</span><span>{{ it.text }}</span></h4>
+      <ul class="r-opts">
+        {% for opt in it.options %}
+          {% set is_right = loop.index0 == it.correct %}
+          {% set is_mine = loop.index0 == it.choice %}
+          <li class="r-opt {% if is_right %}is-correct{% elif is_mine %}is-wrong{% endif %}">
+            <span class="letter">{{ 'ABCD'[loop.index0] }}</span>
+            <span>{{ opt }}</span>
+            {% if is_right and is_mine %}<span class="tag">Sizning javobingiz, to‘g‘ri</span>
+            {% elif is_right %}<span class="tag">To‘g‘ri javob</span>
+            {% elif is_mine %}<span class="tag">Sizning javobingiz</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      {% if it.state == 'skipped' %}<p class="small muted" style="margin:0 0 .6rem">Bu savolga javob berilmagan.</p>{% endif %}
+      {% if it.explanation %}<div class="explain"><b>Izoh:</b> {{ it.explanation }}</div>{% endif %}
+    </article>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+

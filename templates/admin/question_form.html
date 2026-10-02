@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Savolni tahrirlash{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><div><div class="crumbs"><a href="{{ url_for('admin_questions', test_id=test.id) }}">{{ test.title }}</a> / Savolni tahrirlash</div><h1>Savolni tahrirlash</h1></div></div>
+<form class="form-card form" method="post" style="max-width:820px">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="field"><label for="text">Savol matni</label><textarea id="text" name="text" maxlength="1000" required>{{ question.text }}</textarea></div>
+  <div class="field-row">{% for i in range(4) %}<div class="field"><label for="o{{ i }}">{{ 'ABCD'[i] }} variant</label><input id="o{{ i }}" type="text" name="opt{{ i }}" maxlength="300" value="{{ question.options[i] }}" required></div>{% endfor %}</div>
+  <div class="field-row-3 field-row">
+    <div class="field"><label for="correct">To‘g‘ri javob</label><select id="correct" name="correct">{% for i in range(4) %}<option value="{{ i }}" {% if question.correct==i %}selected{% endif %}>{{ 'ABCD'[i] }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="topic_id">Mavzu</label><select id="topic_id" name="topic_id"><option value="">Mavzusiz</option>{% for tp in topics %}<option value="{{ tp.id }}" {% if question.topic_id==tp.id %}selected{% endif %}>{{ tp.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="position">Tartib raqami</label><input id="position" type="number" name="position" min="0" max="9999" value="{{ question.position }}"></div>
+  </div>
+  <div class="field"><label for="explanation">Izoh</label><textarea id="explanation" name="explanation" maxlength="1000" style="min-height:80px">{{ question.explanation }}</textarea></div>
+  <div class="row-actions"><button class="btn btn-primary">Saqlash</button><a class="btn btn-ghost" href="{{ url_for('admin_questions', test_id=test.id) }}">Bekor qilish</a></div>
+</form>
+{% endblock %}
+

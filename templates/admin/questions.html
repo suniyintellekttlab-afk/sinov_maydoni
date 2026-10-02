@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Savollar: {{ test.title }}{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <div><div class="crumbs"><a href="{{ url_for('admin_subject_bank', sid=test.subject_id) }}">{{ test.subject_name }}</a> / {{ test.topic_name or 'Mavzusiz' }}</div><h1>{{ test.title }}</h1><p class="muted small">{{ questions|length }} ta savol · {{ test.difficulty }} · {{ test.topic_name or 'Mavzusiz' }}</p></div>
+  <div class="actions"><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_subject_bank', sid=test.subject_id) }}">← Savol banki</a><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_test_form', test_id=test.id) }}">To‘plam sozlamalari</a></div>
+</div>
+
+<details class="add-box" id="yangi" open>
+  <summary>Yangi savol qo‘shish</summary><div>
+  <form class="form" method="post" action="{{ url_for('admin_questions', test_id=test.id) }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="add">
+    <div class="field"><label for="nq-text">Savol matni</label><textarea id="nq-text" name="text" maxlength="1000" required></textarea></div>
+    <div class="field-row">{% for i in range(4) %}<div class="field"><label for="nq-o{{ i }}">{{ 'ABCD'[i] }} variant</label><input id="nq-o{{ i }}" type="text" name="opt{{ i }}" maxlength="300" required></div>{% endfor %}</div>
+    <div class="field-row-3 field-row">
+      <div class="field"><label for="nq-c">To‘g‘ri javob</label><select id="nq-c" name="correct">{% for i in range(4) %}<option value="{{ i }}">{{ 'ABCD'[i] }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="nq-t">Mavzu</label><select id="nq-t" name="topic_id"><option value="">Mavzusiz</option>{% for tp in topics %}<option value="{{ tp.id }}" {% if test.topic_id==tp.id %}selected{% endif %}>{{ tp.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="nq-e">Izoh</label><input id="nq-e" type="text" name="explanation" maxlength="1000"></div>
+    </div>
+    <div><button class="btn btn-primary" type="submit">Savolni qo‘shish</button></div>
+  </form></div>
+</details>
+
+<details class="add-box"><summary>📊 Excel (.xlsx) orqali import qilish</summary><div><p class="muted small">Ustunlar: <b>Savol, A, B, C, D, To‘g‘ri javob, Izoh, Mavzu</b>. To‘plamning qiyinligi importdagi barcha savollarga avtomatik tegishli bo‘ladi.</p><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_excel_template', test_id=test.id) }}">⬇️ Shablonni yuklab olish</a><form class="form" method="post" action="{{ url_for('admin_excel_import', test_id=test.id) }}" enctype="multipart/form-data" style="margin-top:1rem"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><div class="field"><label>Excel fayl</label><input type="file" name="excel_file" accept=".xlsx,.xlsm" required></div><button class="btn btn-primary">Yuklash va import qilish</button></form></div></details>
+
+<details class="add-box"><summary>Ko‘p savolni matn orqali qo‘shish</summary><div><p class="muted small">Har bir savol: savol | A | B | C | D | to‘g‘ri harf | izoh | mavzu</p><pre class="code">2 + 2 nechaga teng? | 3 | 4 | 5 | 6 | B | Izoh | Qo‘shish</pre><form class="form" method="post" action="{{ url_for('admin_import', test_id=test.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><textarea name="bulk" style="min-height:180px"></textarea><button class="btn btn-primary">Import qilish</button></form></div></details>
+
+{% if questions %}<form method="post" action="{{ url_for('admin_questions', test_id=test.id) }}" class="panel" style="margin-top:1rem"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="assign_topic"><div class="admin-top" style="margin:0 0 1rem"><div><h3>Tanlangan savollarni mavzuga o‘tkazish</h3><p class="muted small">Mavzusiz savollarni keyinchalik shu yerda mavzuga biriktirishingiz mumkin.</p></div><div class="actions"><select name="topic_id"><option value="">Mavzusiz qilish</option>{% for tp in topics %}<option value="{{ tp.id }}">{{ tp.name }}</option>{% endfor %}</select><button class="btn btn-primary btn-sm">Biriktirish</button></div></div>
+  <div class="q-admin">{% for qu in questions %}<div class="q-admin-item"><div style="display:flex;gap:.75rem"><input type="checkbox" name="question_ids" value="{{ qu.id }}" style="margin-top:.45rem"><div><h4>{{ loop.index }}. {{ qu.text }} {% if qu.topic %}<span class="badge">{{ qu.topic }}</span>{% else %}<span class="badge">Mavzusiz</span>{% endif %}</h4><ol type="A">{% for o in qu.options %}<li class="{% if loop.index0==qu.correct %}right{% endif %}">{{ o }}</li>{% endfor %}</ol>{% if qu.explanation %}<p class="muted small" style="margin:.5rem 0 0">Izoh: {{ qu.explanation }}</p>{% endif %}</div></div><div class="row-actions" style="align-self:start"><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_question_edit', qid=qu.id) }}">Tahrirlash</a><form method="post" action="{{ url_for('admin_question_delete', qid=qu.id) }}" data-confirm="Bu savol o‘chirilsinmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm">O‘chirish</button></form></div></div>{% endfor %}</div></form>{% else %}<div class="empty">Bu to‘plamda hali savollar yo‘q.</div>{% endif %}
+{% endblock %}
+

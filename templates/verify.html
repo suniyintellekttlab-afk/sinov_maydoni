@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Sertifikatni tekshirish — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container-narrow" style="padding:3rem 0">
+  {% if data %}
+  <div class="panel">
+    <span class="badge badge-ok">Sertifikat haqiqiy</span>
+    <h1 style="margin-top:.8rem;font-size:1.6rem">{{ data.owner.full_name }}</h1>
+    <dl class="kv">
+      <div><dt>Sertifikat raqami</dt><dd>{{ data.number }}</dd></div>
+      <div><dt>Sana</dt><dd>{{ data.attempt.finished_at|dt('%d.%m.%Y') }}</dd></div>
+      <div><dt>Test</dt><dd>{{ data.test.title }}</dd></div>
+      <div><dt>Natija</dt><dd>{{ data.attempt.percent|pct }}%</dd></div>
+    </dl>
+  </div>
+  {% else %}
+  <div class="panel">
+    <span class="badge badge-bad">Topilmadi</span>
+    <h1 style="margin-top:.8rem;font-size:1.6rem">Bunday sertifikat mavjud emas</h1>
+    <p class="muted">Havola noto‘g‘ri yoki sertifikat o‘chirilgan bo‘lishi mumkin.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+

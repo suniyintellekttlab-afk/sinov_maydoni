@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import brand_mark %}
+{% block title %}Sertifikat {{ number }} — {{ S.site_name }}{% endblock %}
+{% block body_class %}cert-body{% endblock %}
+{% block header %}
+<div class="cert-tools">
+  <button class="btn btn-primary" type="button" data-print>Chop etish / PDF sifatida saqlash</button>
+  <a class="btn btn-ghost" href="{{ url_for('result_view', attempt_id=attempt.id) }}">Natijaga qaytish</a>
+</div>
+{% endblock %}
+{% block flash %}{% endblock %}
+{% block content %}
+<div class="cert">
+  <div class="cert-inner">
+    {{ brand_mark() }}
+    <div class="cert-org">{{ S.site_name }}</div>
+    <div class="cert-title">SERTIFIKAT</div>
+    <div class="cert-text">Ushbu sertifikat quyidagi shaxsga topshiriladi</div>
+    <div class="cert-name">{{ owner.full_name }}</div>
+    <div class="cert-text">
+      «{{ test.title }}» ({{ test.subject_name }}) testini {{ attempt.percent|pct }}% natija bilan
+      muvaffaqiyatli topshirgani uchun.
+    </div>
+    <div class="cert-foot">
+      <div>Sertifikat raqami<br><b>{{ number }}</b></div>
+      <div style="text-align:center">Berilgan sana<br><b>{{ attempt.finished_at|dt('%d.%m.%Y') }}</b></div>
+      <a class="cert-verify" href="{{ verify_url }}" target="_blank" rel="noopener">
+        <img src="{{ url_for('certificate_qr', attempt_id=attempt.id) }}" alt="Sertifikatni tekshirish QR kodi">
+        <span>Tekshirish uchun skanerlang</span>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}
+

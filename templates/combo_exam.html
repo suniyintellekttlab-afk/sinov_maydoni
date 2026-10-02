@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ cfg.title }} — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container-narrow">
+  <div class="page-head">
+    <div class="crumbs"><a href="{{ url_for('tests_list') }}">Testlar</a> / {{ cfg.title }}</div>
+    <h1>{{ '🎓' if mode == 'dtm' else '📜' }} {{ cfg.title }}</h1>
+    <p>{{ cfg.intro }}</p>
+  </div>
+
+  {% if not me %}
+  <div class="empty" style="text-align:left;padding:1.25rem 1.5rem">
+    Testni boshlash uchun <a href="{{ url_for('login_view', next=request.path) }}">tizimga kiring</a>
+    yoki <a href="{{ url_for('register_view') }}">ro‘yxatdan o‘ting</a>.
+  </div>
+  {% endif %}
+
+  {% if mode == 'dtm' %}
+    <details class="cert-note">
+      <summary><span aria-hidden="true">ℹ️</span> Sertifikatingiz bormi? (CEFR/IELTS/Milliy)</summary>
+      <div>
+        Haqiqiy DTM imtihonida rasmiy CEFR, IELTS yoki Milliy sertifikat egalariga qo‘shimcha ball
+        beriladi — bu davlat tomonidan belgilangan qoida, arizangizni topshirishda hisobga olinadi.
+        <b>Diqqat:</b> bu ma’lumot faqat tanishtirish uchun — bizning platformamiz bunday sertifikatlarni
+        tekshirmaydi va bonus ball hisoblamaydi, chunki bu funksiya hali mavjud emas.
+      </div>
+    </details>
+
+    {% if yonalish1 %}
+    <form class="form-card form" method="post" action="{{ url_for('dtm_start') }}" id="dtm-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+
+      <div class="dtm-section-label">Yo‘nalish fanlari <span class="muted">(2 ta tanlanadi)</span></div>
+      <div class="field-row">
+        <div class="field">
+          <label for="yonalish1">1-fan <span class="muted small">({{ yonalish_count }} tagacha savol)</span></label>
+          <select id="yonalish1" name="yonalish1" required>
+            <option value="">Fan tanlang…</option>
+            {% for s in yonalish1 %}
+              <option value="{{ s.id }}" {% if not s.q_count %}disabled{% endif %}>{{ s.icon }} {{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="yonalish2">2-fan <span class="muted small">({{ yonalish_count }} tagacha savol)</span></label>
+          <select id="yonalish2" name="yonalish2" required disabled>
+            <option value="">Avval 1-fanni tanlang…</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint" id="dtm-yonalish-desc" hidden></p>
+
+      <div class="dtm-mandatory">
+        <div class="dtm-section-label">🔒 Majburiy fanlar <span class="muted">({{ majburiy_count }} tagacha savoldan)</span></div>
+        <div class="dtm-mandatory-list">
+          {% for s in majburiy %}
+          <span class="chip" style="--c: {{ s.color }}"><span aria-hidden="true">{{ s.icon }}</span> {{ s.name }}</span>
+          {% endfor %}
+        </div>
+        {% if majburiy|length < 3 %}
+        <p class="hint" style="color:var(--bad)">Diqqat: Ona tili, Matematika yoki Tarix fani tizimda topilmadi — administrator bilan bog‘laning.</p>
+        {% endif %}
+      </div>
+
+      <div class="dtm-summary muted small">
+        Yakuniy savollar soni tanlangan fanlardagi mavjud savollarga qarab belgilanadi (majburiy fanlardan taxminan
+        {{ majburiy_total }} ta). Vaqt: 3 soat (180 daqiqa).
+      </div>
+
+      <button class="btn btn-primary" type="submit" id="dtm-submit" {% if not me or majburiy|length < 3 %}disabled{% endif %}>Testni yaratish va boshlash</button>
+    </form>
+    <script type="application/json" id="dtm-pairs-data">{{ pairs_by_id|tojson }}</script>
+    {% else %}
+    <div class="empty">
+      Hozircha DTM yo‘nalishi uchun 1-fan qo‘shilmagan. Administrator panelida quyidagi fanlarni
+      aynan shu nomlar bilan qo‘shing: Ona tili, Geografiya, Biologiya, Tarix, Kimyo, Fizika,
+      Ingliz tili, Matematika, Rus tili, Huquq.
+    </div>
+    {% endif %}
+
+  {% else %}
+    {% if subjects %}
+    <form class="form-card form" method="post" action="{{ url_for('milliy_start') }}" id="combo-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field">
+        <label>Fanlarni tanlang <span class="muted">({{ cfg.min_subjects }}–{{ cfg.max_subjects }} ta)</span></label>
+        <div class="combo-grid">
+          {% for s in subjects %}
+          <label class="combo-check {% if not s.q_count %}is-empty{% endif %}">
+            <input type="checkbox" name="subjects" value="{{ s.id }}" {% if not s.q_count %}disabled{% endif %}>
+            <span class="combo-icon" style="--c: {{ s.color }}">{{ s.icon }}</span>
+            <span class="combo-name">{{ s.name }}</span>
+            <span class="combo-count muted small">{{ s.q_count }} ta savol</span>
+          </label>
+          {% endfor %}
+        </div>
+        <span class="hint" id="combo-hint">Kamida {{ cfg.min_subjects }} ta fan tanlang.</span>
+      </div>
+      <button class="btn btn-primary" type="submit" id="combo-submit" {% if not me %}disabled{% endif %}>Testni yaratish va boshlash</button>
+    </form>
+    {% else %}
+    <div class="empty">Hozircha fanlar qo‘shilmagan.</div>
+    {% endif %}
+  {% endif %}
+</div>
+{% endblock %}
+

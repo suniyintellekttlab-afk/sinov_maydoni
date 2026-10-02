@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Kirish — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="auth">
+    <div class="auth-side">
+      <h2>Qaytganingiz bilan!</h2>
+      <p>Urinishlar tarixi, reyting va sertifikatlaringiz shu yerda saqlanadi.</p>
+    </div>
+    <div class="auth-body">
+      <h1>Tizimga kirish</h1>
+      <form class="form" method="post" action="{{ url_for('login_view') }}">
+        <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+        {% if nxt %}<input type="hidden" name="next" value="{{ nxt }}">{% endif %}
+        <div class="field"><label for="username">Foydalanuvchi nomi</label><input id="username" type="text" name="username" value="{{ username }}" autocomplete="username" autocapitalize="none" required autofocus></div>
+        <div class="field"><label for="password">Parol</label><input id="password" type="password" name="password" autocomplete="current-password" required></div>
+        <button class="btn btn-primary btn-block" type="submit">Kirish</button>
+      </form>
+      <p class="auth-alt">Hisobingiz yo‘qmi? <a href="{{ url_for('register_view') }}">Ro‘yxatdan o‘ting</a><br>
+      Parolni unutdingizmi? <a href="{{ url_for('contact_view') }}">Administratorga yozing</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

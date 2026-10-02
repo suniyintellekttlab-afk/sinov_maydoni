@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager %}
+{% block title %}Profil — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container" style="padding-top:2.25rem">
+  <div class="profile-head">
+    <span class="avatar avatar-lg">{{ me.full_name|initial }}</span>
+    <div>
+      <h1>{{ me.full_name }}</h1>
+      <p class="muted" style="margin:0">@{{ me.username }}{% if me.region %} — {{ me.region }}{% endif %}</p>
+    </div>
+    <a class="btn btn-ghost btn-sm" style="margin-left:auto" href="{{ url_for('settings_view') }}">Sozlamalar</a>
+  </div>
+
+  <div class="profile-badges">
+    <span class="xp-pill">⚡ {{ me.xp }} XP</span>
+    {% if premium_active %}
+      <span class="badge" style="background:#F2A93B;color:#0E1B33">👑 Premium faol ({{ me.premium_until|dt('%d.%m.%Y') }} gacha)</span>
+    {% elif S.premium_enabled == '1' %}
+      <span class="badge">Premium yoqilmagan</span>
+    {% endif %}
+  </div>
+
+  <div class="stat-cards">
+    <div class="stat-card"><span>Yechilgan testlar</span><strong>{{ stats.n }}</strong></div>
+    <div class="stat-card"><span>O‘rtacha natija</span><strong>{{ (stats.avg or 0)|pct }}%</strong></div>
+    <div class="stat-card"><span>Eng yaxshi natija</span><strong>{{ (stats.best or 0)|pct }}%</strong></div>
+    <div class="stat-card"><span>Reytingdagi o‘rin</span><strong>{% if rank %}{{ rank }}-o‘rin{% else %}—{% endif %}</strong></div>
+  </div>
+
+  <div class="panel referral-panel">
+    <h3>🎁 Do‘stlaringizni taklif qiling</h3>
+    <p class="muted small" style="margin-top:-.4rem">
+      Havolangiz orqali ro‘yxatdan o‘tgan har bir do‘stingiz uchun sizga 7 kunlik Premium beriladi.
+      Hozircha taklif qilingan: <b>{{ referral_count }}</b> kishi.
+    </p>
+    <div class="referral-row">
+      <input type="text" readonly value="{{ referral_link }}" id="referral-link" onclick="this.select()">
+      <button class="btn btn-ghost btn-sm" type="button" data-copy="{{ referral_link }}">Nusxalash</button>
+      <a class="btn btn-primary btn-sm" target="_blank" rel="noopener"
+         href="https://t.me/share/url?url={{ referral_link|urlencode }}&text={{ ('Men ' ~ S.site_name ~ ' platformasida testlar yechyapman — sen ham qo‘shil!')|urlencode }}">Telegramda ulashish</a>
+    </div>
+  </div>
+
+  {% if active %}
+  <div class="panel" style="margin-bottom:1.5rem;border-color:var(--saffron)">
+    <h3>Yakunlanmagan testlar</h3>
+    <ul class="mini-list">
+      {% for a in active %}
+      <li><span>{{ a.title }} <span class="muted small">(tugash vaqti {{ a.deadline|dt('%H:%M') }})</span></span>
+        <a class="btn btn-accent btn-sm" href="{{ url_for('attempt_view', attempt_id=a.id) }}">Davom ettirish</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="two-col">
+    <div class="panel">
+      <h3>Fanlar bo‘yicha o‘rtacha natija</h3>
+      {% if by_subject %}
+        {% for s in by_subject %}
+        <div class="bar-row" style="--c: {{ s.color }}">
+          <span>{{ s.icon }} {{ s.name }}</span>
+          <div class="bar-track"><i style="width: {{ s.avg|round(0) }}%"></i></div>
+          <b>{{ s.avg|pct }}%</b>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">Hali test yechilmagan. <a href="{{ url_for('tests_list') }}">Testlarga o‘ting</a>.</p>
+      {% endif %}
+    </div>
+    <div class="panel">
+      <h3>Umumiy ko‘rsatkichlar</h3>
+      <ul class="mini-list">
+        <li><span>Reyting bali</span><b>{{ (points or 0)|pct }}</b></li>
+        <li><span>Muvaffaqiyatli topshirilgan</span><b>{{ stats.passed }} ta</b></li>
+        <li><span>Ro‘yxatdan o‘tgan sana</span><b>{{ me.created_at|dt('%d.%m.%Y') }}</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <section style="margin-top:2rem">
+    <div class="section-head"><h2>Urinishlar tarixi</h2></div>
+    {% if history %}
+    <div class="table-wrap">
+      <table class="table attempt-history">
+        <thead><tr><th>Test</th><th>Fan</th><th>Sana</th><th class="num">Natija</th><th>Vaqt</th><th></th></tr></thead>
+        <tbody>
+        {% for a in history %}
+          <tr>
+            <td><a href="{{ url_for('test_detail', test_id=a.test_id) }}">{{ a.title }}</a></td>
+            <td>{{ a.subject_icon }} {{ a.subject_name }}</td>
+            <td class="nowrap">{{ a.finished_at|dt }}</td>
+            <td class="num nowrap"><b>{{ a.percent|pct }}%</b> {% if a.passed %}<span class="badge badge-ok">o‘tdi</span>{% else %}<span class="badge badge-bad">o‘tmadi</span>{% endif %}</td>
+            <td class="nowrap">{{ a.duration_sec|dur }}</td>
+            <td><a href="{{ url_for('result_view', attempt_id=a.id) }}">Tahlil</a>{% if a.passed %} · <a href="{{ url_for('certificate_view', attempt_id=a.id) }}" target="_blank" rel="noopener">Sertifikat</a>{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ pager(page, pages) }}
+    {% else %}
+    <div class="empty">Sizda hali yakunlangan urinishlar yo‘q.</div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+

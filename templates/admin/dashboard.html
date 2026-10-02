@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Boshqaruv paneli{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>Boshqaruv paneli</h1>
+  <div class="actions"><a class="btn btn-primary btn-sm" href="{{ url_for('admin_subjects') }}">Savol banki</a><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_news_form') }}">Yangi yangilik</a></div>
+</div>
+
+<div class="cards">
+  <div class="stat-card"><span>Foydalanuvchilar</span><strong>{{ counts.users }}</strong></div>
+  <div class="stat-card"><span>Fanlar</span><strong>{{ counts.subjects }}</strong></div>
+  <div class="stat-card"><span>Testlar</span><strong>{{ counts.tests }}</strong></div>
+  <div class="stat-card"><span>Savollar</span><strong>{{ counts.questions }}</strong></div>
+  <div class="stat-card"><span>Urinishlar</span><strong>{{ counts.attempts }}</strong></div>
+  <div class="stat-card"><span>O‘qilmagan xabarlar</span><strong>{{ counts.unread }}</strong></div>
+</div>
+
+<div class="panel">
+  <h3>Oxirgi 14 kun: boshlangan urinishlar</h3>
+  <div class="chart" role="img" aria-label="Kunlar bo‘yicha urinishlar soni">
+    {% for c in chart %}
+    <div class="col"><b>{{ c.value if c.value else '' }}</b><div class="bar" style="height: {{ (c.value / peak * 100)|round(0) }}%"></div><span>{{ c.label }}</span></div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:1rem">
+  <div class="panel">
+    <h3>Oxirgi natijalar</h3>
+    {% if recent %}
+    <ul class="mini-list">
+      {% for a in recent %}
+      <li><span><b>{{ a.full_name|short_name }}</b> <span class="muted small">{{ a.title }}</span></span>
+        <a href="{{ url_for('result_view', attempt_id=a.id) }}">{{ a.percent|pct }}%</a></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">Hali natijalar yo‘q.</p>{% endif %}
+  </div>
+  <div class="panel">
+    <h3>Yangi foydalanuvchilar</h3>
+    <ul class="mini-list">
+      {% for u in newest %}
+      <li><span>{{ u.full_name }} <span class="muted small">@{{ u.username }}</span></span><span class="muted small">{{ u.created_at|dt('%d.%m.%Y') }}</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
+

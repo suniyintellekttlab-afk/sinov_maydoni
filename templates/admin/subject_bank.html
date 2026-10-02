@@ -1,0 +1,55 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import diff_badge %}
+{% block admin_title %}{{ subject.name }} — Savol banki{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <div><div class="crumbs"><a href="{{ url_for('admin_subjects') }}">Fanlar</a> / {{ subject.name }}</div><h1>{{ subject.icon }} {{ subject.name }}</h1><p class="muted small">Mavzu yarating, keyin shu mavzu uchun savol to‘plami oching va qiyinlikni bir marta belgilang.</p></div>
+  <div class="actions"><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_subjects') }}">← Fanlar</a><a class="btn btn-primary" href="{{ url_for('admin_test_form', fan=subject.id) }}">+ Yangi savol to‘plami</a></div>
+</div>
+
+<div class="cards" style="margin-bottom:1rem">
+  <div class="stat-card"><span>Mavzular</span><strong>{{ topics|length }}</strong></div>
+  <div class="stat-card"><span>Savol to‘plamlari</span><strong>{{ sets|length }}</strong></div>
+  <div class="stat-card"><span>Mavzusiz savollar</span><strong>{{ no_topic_count }}</strong></div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <div class="admin-top" style="margin:0 0 1rem"><h3>Mavzular</h3></div>
+    <form class="form" method="post" action="{{ url_for('admin_topic_create', sid=subject.id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field-row"><div class="field"><label>Yangi mavzu</label><input name="name" maxlength="120" placeholder="Masalan: Atom tuzilishi" required></div><div style="align-self:end"><button class="btn btn-primary" type="submit">Mavzu qo‘shish</button></div></div>
+    </form>
+    <div class="table-wrap" style="margin-top:1rem">
+      <table class="table"><thead><tr><th>Mavzu</th><th class="num">Savollar</th><th class="num">To‘plamlar</th><th></th></tr></thead><tbody>
+      {% for tp in topics %}<tr><td><b>{{ tp.name }}</b></td><td class="num">{{ tp.question_count }}</td><td class="num">{{ tp.set_count }}</td><td><details class="inline-details"><summary class="btn btn-ghost btn-sm">Tahrir</summary><form class="form" method="post" action="{{ url_for('admin_topic_save', topic_id=tp.id) }}" style="min-width:300px"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><div class="field"><label>Nomi</label><input name="name" value="{{ tp.name }}" required></div><button class="btn btn-primary btn-sm">Saqlash</button></form></details><form style="display:inline" method="post" action="{{ url_for('admin_topic_delete', topic_id=tp.id) }}" data-confirm="Mavzu o‘chiriladi, savollar o‘chmaydi — mavzusiz qoladi."><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm">O‘chirish</button></form></td></tr>{% else %}<tr><td colspan="4" class="muted center">Hali mavzu yo‘q.</td></tr>{% endfor %}
+      </tbody></table>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Mavzusiz savollar</h3>
+    <p class="muted small">Keyinroq mavzu yaratgan bo‘lsangiz, eski mavzusiz savollarni shu yerning o‘zidan biriktirishingiz mumkin.</p>
+    {% if topics %}
+    <form class="form" method="post" action="{{ url_for('admin_assign_unassigned_topic', sid=subject.id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label>Qaysi mavzuga?</label><select name="topic_id" required><option value="">Tanlang</option>{% for tp in topics %}<option value="{{ tp.id }}">{{ tp.name }}</option>{% endfor %}</select></div>
+      <button class="btn btn-primary" type="submit">Barchasini biriktirish</button>
+    </form>
+    <hr style="margin:1rem 0">
+    <form class="form" method="post" action="{{ url_for('admin_create_topic_and_assign', sid=subject.id) }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label>Yangi mavzu yaratib, mavzusizlarni unga o‘tkazish</label><input name="name" maxlength="120" placeholder="Yangi mavzu nomi"></div>
+      <button class="btn btn-ghost" type="submit">Yaratish va biriktirish</button>
+    </form>
+    {% else %}<span class="badge">Avval mavzu yarating</span>{% endif %}
+  </div>
+</div>
+
+<div class="panel" style="margin-top:1rem">
+  <div class="admin-top" style="margin:0 0 1rem"><div><h3>Savol to‘plamlari</h3><p class="muted small">Qiyinlik har bir to‘plam yaratilganda bir marta belgilanadi. Ichidagi savollarda qiyinlik qayta tanlanmaydi.</p></div></div>
+  <div class="table-wrap"><table class="table"><thead><tr><th>To‘plam</th><th>Mavzu</th><th>Qiyinlik</th><th class="num">Savollar</th><th>Holat</th><th></th></tr></thead><tbody>
+  {% for t in sets %}<tr><td><a href="{{ url_for('admin_questions', test_id=t.id) }}"><b>{{ t.title }}</b></a></td><td>{{ t.topic_name or 'Mavzusiz' }}</td><td>{{ diff_badge(t.difficulty) }}</td><td class="num">{{ t.q_count }}</td><td>{% if t.is_published %}<span class="badge badge-ok">faol</span>{% else %}<span class="badge">qoralama</span>{% endif %}</td><td><div class="row-actions"><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_questions', test_id=t.id) }}">Savollar</a><a class="btn btn-ghost btn-sm" href="{{ url_for('admin_test_form', test_id=t.id) }}">Tahrir</a><form method="post" action="{{ url_for('admin_test_delete', test_id=t.id) }}" data-confirm="Ushbu savol to‘plami va ichidagi savollar o‘chiriladi."><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm">O‘chirish</button></form></div></td></tr>{% else %}<tr><td colspan="6" class="center muted">Hali savol to‘plami yo‘q.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}
+

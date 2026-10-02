@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Natijalar{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <h1>Natijalar <span class="muted small">({{ total }})</span></h1>
+  <div class="actions">
+    <a class="btn btn-ghost btn-sm" href="{{ url_for('admin_attempts_csv', q=term, test=test_id) }}">CSV yuklab olish</a>
+  </div>
+</div>
+<form class="filters" style="grid-template-columns:2fr 2fr auto" method="get" action="{{ url_for('admin_attempts') }}">
+  <div class="field"><label for="a-q">Foydalanuvchi</label><input id="a-q" type="search" name="q" value="{{ term }}" placeholder="Ism yoki foydalanuvchi nomi"></div>
+  <div class="field"><label for="a-t">Test</label>
+    <select id="a-t" name="test"><option value="">Barcha testlar</option>
+      {% for t in tests %}<option value="{{ t.id }}" {% if test_id == t.id|string %}selected{% endif %}>{{ t.title }}</option>{% endfor %}
+    </select></div>
+  <button class="btn btn-primary" type="submit">Saralash</button>
+</form>
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Foydalanuvchi</th><th>Test</th><th class="num">To‘g‘ri</th><th class="num">Natija</th><th>Vaqt</th><th>Sana</th><th></th></tr></thead>
+    <tbody>
+    {% for a in rows %}
+      <tr>
+        <td><b>{{ a.full_name }}</b><br><span class="muted small">@{{ a.username }}</span></td>
+        <td>{{ a.title }}</td>
+        <td class="num">{{ a.correct_count }} / {{ a.total }}</td>
+        <td class="num nowrap"><b>{{ a.percent|pct }}%</b> {% if a.passed %}<span class="badge badge-ok">o‘tdi</span>{% else %}<span class="badge badge-bad">o‘tmadi</span>{% endif %}</td>
+        <td class="nowrap">{{ a.duration_sec|dur }}</td>
+        <td class="nowrap">{{ a.finished_at|dt }}</td>
+        <td>
+          <div class="row-actions">
+            <a class="btn btn-ghost btn-sm" href="{{ url_for('result_view', attempt_id=a.id) }}">Ko‘rish</a>
+            <form method="post" action="{{ url_for('admin_attempt_delete', attempt_id=a.id) }}" data-confirm="Bu natija o‘chirilsinmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form>
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="center muted">Natijalar topilmadi.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(page, pages) }}
+{% endblock %}
+

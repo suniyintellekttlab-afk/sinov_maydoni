@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import pager %}
+{% block admin_title %}Maktablar{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <div><h1>Maktablar ro‘yxati</h1><p class="muted small">Bu ro‘yxat ro‘yxatdan o‘tishda o‘quvchi va o‘qituvchilarga ko‘rinadi.</p></div>
+</div>
+
+<form class="form-card form" method="post" style="max-width:760px;margin-bottom:1.25rem">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="field-row">
+    <div class="field"><label for="school-name">Maktab nomi</label><input id="school-name" name="name" maxlength="160" placeholder="Sherobod 27-maktab" required></div>
+    <div class="field"><label for="school-region">Hudud (ixtiyoriy)</label><input id="school-region" name="region" maxlength="100" placeholder="Sherobod tumani"></div>
+  </div>
+  <button class="btn btn-primary" type="submit">Maktab qo‘shish</button>
+</form>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Maktab</th><th>Hudud</th><th class="num">O‘quvchilar</th><th class="num">O‘qituvchilar</th><th></th></tr></thead>
+    <tbody>
+      {% for school in schools %}
+      <tr>
+        <td><b>{{ school.name }}</b></td><td>{{ school.region or '—' }}</td>
+        <td class="num">{{ school.student_count }}</td><td class="num">{{ school.teacher_count }}</td>
+        <td><form method="post" action="{{ url_for('admin_school_delete', school_id=school.id) }}" data-confirm="{{ school.name }} maktabini o‘chirsangiz, foydalanuvchilar maktabdan ajratiladi. Davom etasizmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form></td>
+      </tr>
+      {% else %}<tr><td colspan="5" class="center muted">Maktablar ro‘yxati hali bo‘sh.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

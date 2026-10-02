@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Foydalanuvchilar{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <h1>Foydalanuvchilar <span class="muted small">({{ total }})</span></h1>
+  <form class="inline-form" method="get" action="{{ url_for('admin_users') }}">
+    <input type="search" name="q" value="{{ term }}" placeholder="Ism, nom yoki pochta" aria-label="Qidirish">
+    <button class="btn btn-primary btn-sm" type="submit">Qidirish</button>
+  </form>
+</div>
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Foydalanuvchi</th><th>Hudud</th><th class="num">Urinishlar</th><th>Ro‘yxatdan o‘tgan</th><th>Oxirgi kirish</th><th>Holat</th><th></th></tr></thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td><div class="person"><span class="avatar">{{ u.full_name|initial }}</span><div><b>{{ u.full_name }}</b><br><span class="muted small">@{{ u.username }}{% if u.email %} · {{ u.email }}{% endif %}</span></div></div></td>
+        <td>{{ u.region or '—' }}</td>
+        <td class="num">{{ u.n_attempts }}</td>
+        <td class="nowrap">{{ u.created_at|dt('%d.%m.%Y') }}</td>
+        <td class="nowrap">{{ u.last_login|dt }}</td>
+        <td>
+          <span class="status-dot {% if not u.is_active %}off{% endif %}"></span>{{ 'faol' if u.is_active else 'bloklangan' }}
+          {% if u.is_admin %}<span class="badge badge-dark">admin</span>{% endif %}
+        </td>
+        <td>
+          <div class="row-actions">
+            <form method="post" action="{{ url_for('admin_user_action', uid=u.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="reset_password"><button class="btn btn-ghost btn-sm" type="submit" data-confirm="{{ u.username }} uchun yangi vaqtinchalik parol yaratilsinmi?">Parolni tiklash</button></form>
+            {% if u.id != me.id %}
+            <form method="post" action="{{ url_for('admin_user_action', uid=u.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_active"><button class="btn btn-ghost btn-sm" type="submit">{{ 'Bloklash' if u.is_active else 'Faollashtirish' }}</button></form>
+            <form method="post" action="{{ url_for('admin_user_action', uid=u.id) }}"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="toggle_admin"><button class="btn btn-ghost btn-sm" type="submit" data-confirm="Administrator huquqi o‘zgartirilsinmi?">{{ 'Adminlikni olish' if u.is_admin else 'Admin qilish' }}</button></form>
+            <form method="post" action="{{ url_for('admin_user_action', uid=u.id) }}" data-confirm="{{ u.full_name }} va uning barcha natijalari o‘chiriladi. Davom etasizmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><input type="hidden" name="action" value="delete"><button class="btn btn-danger btn-sm" type="submit">O‘chirish</button></form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="center muted">Foydalanuvchilar topilmadi.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{{ pager(page, pages) }}
+{% endblock %}
+

@@ -1,0 +1,46 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Savol banki — Fanlar{% endblock %}
+{% block admin_content %}
+<div class="admin-top">
+  <div><h1>Savol banki</h1><p class="muted small" style="margin:.25rem 0 0">Har bir fan ichida mavzular, savol to‘plamlari va savollar boshqariladi.</p></div>
+</div>
+
+<details class="add-box" {% if not subjects %}open{% endif %}>
+  <summary>Yangi fan qo‘shish</summary>
+  <div>
+    <form class="form" method="post" action="{{ url_for('admin_subjects') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field-row-3 field-row">
+        <div class="field"><label>Nomi</label><input type="text" name="name" maxlength="60" required></div>
+        <div class="field"><label>Belgi (emoji)</label><input type="text" name="icon" maxlength="8" placeholder="📘"></div>
+        <div class="field"><label>Rang</label><input type="color" name="color" value="#1F4FB2"></div>
+      </div>
+      <div class="field"><label>Qisqa tavsif</label><input type="text" name="description" maxlength="200"></div>
+      <div class="field" style="max-width:160px"><label>Tartib raqami</label><input type="number" name="position" value="0" min="0" max="999"></div>
+      <div><button class="btn btn-primary" type="submit">Qo‘shish</button></div>
+    </form>
+  </div>
+</details>
+
+<div class="table-wrap">
+  <table class="table">
+    <thead><tr><th>Fan</th><th class="num">Mavzular</th><th class="num">Savol to‘plamlari</th><th class="num">Savollar</th><th></th></tr></thead>
+    <tbody>
+    {% for s in subjects %}
+      <tr>
+        <td><b>{{ s.icon }} {{ s.name }}</b><div class="muted small">{{ s.description }}</div></td>
+        <td class="num">{{ s.topic_count }}</td>
+        <td class="num">{{ s.test_count }}</td>
+        <td class="num">{{ s.question_count }}</td>
+        <td><div class="row-actions">
+          <a class="btn btn-primary btn-sm" href="{{ url_for('admin_subject_bank', sid=s.id) }}">Ichiga kirish</a>
+          <details class="inline-details"><summary class="btn btn-ghost btn-sm">Tahrirlash</summary><form class="form" method="post" action="{{ url_for('admin_subject_save', sid=s.id) }}" style="min-width:360px;margin-top:.5rem"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><div class="field-row"><div class="field"><label>Nomi</label><input type="text" name="name" value="{{ s.name }}" required></div><div class="field"><label>Belgi</label><input type="text" name="icon" value="{{ s.icon }}" maxlength="8"></div></div><div class="field"><label>Tavsif</label><input type="text" name="description" value="{{ s.description }}" maxlength="200"></div><div class="field"><label>Rang</label><input type="color" name="color" value="{{ s.color }}"></div><div><button class="btn btn-primary btn-sm">Saqlash</button></div></form></details>
+          <form method="post" action="{{ url_for('admin_subject_delete', sid=s.id) }}" data-confirm="«{{ s.name }}» fani va uning savol bankidagi savollar o‘chiriladi. Davom etasizmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn btn-danger btn-sm">O‘chirish</button></form>
+        </div></td>
+      </tr>
+    {% else %}<tr><td colspan="5" class="center muted">Hali fanlar yo‘q.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+

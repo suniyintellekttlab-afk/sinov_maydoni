@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ test.title }} — test yechilmoqda{% endblock %}
+{% block body_class %}attempt-body{% endblock %}
+{% block header %}
+<div class="attempt-bar">
+  <div class="container attempt-bar-inner">
+    <div class="attempt-title"><small>{{ test.subject_name }}</small>{{ test.title }}</div>
+    <div class="timer" id="timer" role="timer" aria-label="Qolgan vaqt">--:--</div>
+  </div>
+  <div class="progress" aria-hidden="true"><i id="progress-bar"></i></div>
+</div>
+{% endblock %}
+{% block content %}
+<div class="container attempt-grid">
+  <section class="q-card" aria-live="polite">
+    <div class="q-head">
+      <span class="q-count" id="q-count"></span>
+      <button class="flag-btn" id="flag-btn" type="button" aria-pressed="false">Belgilab qo‘yish</button>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="opt-list" id="q-options" role="radiogroup" aria-label="Javob variantlari"></div>
+    <div class="q-actions">
+      <button class="btn btn-ghost" id="prev-btn" type="button">Oldingi</button>
+      <button class="btn btn-primary" id="next-btn" type="button">Keyingi</button>
+    </div>
+  </section>
+
+  <aside class="side-card">
+    <h4>Savollar</h4>
+    <div class="nav-grid" id="nav-grid"></div>
+    <div class="legend">
+      <span><i class="a"></i>javob berilgan</span>
+      <span><i class="f"></i>belgilangan</span>
+    </div>
+    <button class="btn btn-accent btn-block" id="finish-btn" type="button">Testni yakunlash</button>
+    <div class="save-state" id="save-state" role="status"></div>
+    <p class="kbd-hint">Klavishlar: <kbd>1</kbd>–<kbd>4</kbd> variant tanlash, <kbd>←</kbd> <kbd>→</kbd> savollar orasida yurish.</p>
+  </aside>
+</div>
+
+<dialog id="finish-dialog" aria-labelledby="finish-title">
+  <h3 id="finish-title">Testni yakunlaysizmi?</h3>
+  <p id="finish-summary" class="muted" style="margin:0"></p>
+  <div class="warn-text" id="finish-warn" hidden></div>
+  <div class="dialog-actions">
+    <button class="btn btn-ghost" id="finish-cancel" type="button">Testga qaytish</button>
+    <button class="btn btn-primary" id="finish-confirm" type="button">Ha, yakunlash</button>
+  </div>
+</dialog>
+
+<script type="application/json" id="attempt-data">{{ payload|tojson }}</script>
+{% endblock %}
+{% block footer %}{% endblock %}
+

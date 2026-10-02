@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Savol-javob{% endblock %}
+{% block admin_content %}
+<div class="admin-top"><h1>Savol-javob</h1></div>
+<details class="add-box" {% if not rows %}open{% endif %}>
+  <summary>Yangi savol qo‘shish</summary>
+  <div>
+    <form class="form" method="post" action="{{ url_for('admin_faq') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <div class="field"><label>Savol</label><input type="text" name="question" maxlength="250" required></div>
+      <div class="field"><label>Javob</label><textarea name="answer" maxlength="2000" required></textarea></div>
+      <div class="field" style="max-width:160px"><label>Tartib raqami</label><input type="number" name="position" value="0" min="0" max="999"></div>
+      <div><button class="btn btn-primary" type="submit">Qo‘shish</button></div>
+    </form>
+  </div>
+</details>
+{% for f in rows %}
+<div class="panel" style="margin-bottom:.75rem">
+  <form class="form" method="post" action="{{ url_for('admin_faq_save', fid=f.id) }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="field"><label>Savol</label><input type="text" name="question" value="{{ f.question }}" maxlength="250" required></div>
+    <div class="field"><label>Javob</label><textarea name="answer" maxlength="2000" required style="min-height:90px">{{ f.answer }}</textarea></div>
+    <div class="row-actions">
+      <input type="number" name="position" value="{{ f.position }}" min="0" max="999" style="width:90px" aria-label="Tartib raqami">
+      <button class="btn btn-ghost btn-sm" type="submit">Saqlash</button>
+      <button class="btn btn-danger btn-sm" type="submit" form="del-f{{ f.id }}">O‘chirish</button>
+    </div>
+  </form>
+  <form id="del-f{{ f.id }}" method="post" action="{{ url_for('admin_faq_delete', fid=f.id) }}" data-confirm="Bu savol-javob o‘chirilsinmi?"><input type="hidden" name="_csrf" value="{{ csrf_token() }}"></form>
+</div>
+{% else %}
+<div class="empty">Hozircha savol-javoblar yo‘q.</div>
+{% endfor %}
+{% endblock %}
+

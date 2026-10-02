@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "_macros.html" import test_card, diff_badge %}
+{% block title %}{{ test.title }} — {{ S.site_name }}{% endblock %}
+{% block description %}{{ test.description }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="crumbs">
+      <a href="{{ url_for('tests_list') }}">Testlar</a> /
+      <a href="{{ url_for('tests_list', fan=test.subject_slug) }}">{{ test.subject_name }}</a>
+    </div>
+    <h1>{{ test.title }}</h1>
+    <p>{{ test.description }}</p>
+    {% if not test.is_published %}<p><span class="badge badge-warn">Bu test hozircha e’lon qilinmagan (faqat adminlarga ko‘rinadi)</span></p>{% endif %}
+  </div>
+
+  <div class="detail-grid">
+    <div>
+      <div class="panel">
+        {% if test.subject_slug == 'aralash' %}
+        <span class="chip" style="--c: {{ test.subject_color }}"><span aria-hidden="true">{{ test.subject_icon }}</span> {{ test.subject_name }}</span>
+        {% else %}
+        <a class="chip" style="--c: {{ test.subject_color }}" href="{{ url_for('tests_list', fan=test.subject_slug) }}"><span aria-hidden="true">{{ test.subject_icon }}</span> {{ test.subject_name }}</a>
+        {% endif %}
+        <dl class="kv">
+          <div><dt>Savollar soni</dt><dd>{{ test.q_count }} ta</dd></div>
+          <div><dt>Vaqt</dt><dd>{{ test.duration_min }} daqiqa</dd></div>
+          <div><dt>Qiyinlik</dt><dd>{{ diff_badge(test.difficulty) }}</dd></div>
+          <div><dt>O‘tish balli</dt><dd>{{ test.pass_percent }}%</dd></div>
+        </dl>
+        <h3>Testdan oldin</h3>
+        <ul class="rules">
+          <li>Test {{ test.duration_min }} daqiqa davom etadi. Vaqt tugasa, test avtomatik yakunlanadi.</li>
+          <li>Har bir tanlovingiz darhol saqlanadi, sahifa yopilib qolsa ham testni davom ettirishingiz mumkin.</li>
+          <li>Qiyin savollarni belgilab qo‘yib, keyin qaytishingiz mumkin.</li>
+          <li>Natija va har bir savolning izohi test yakunlangach ko‘rsatiladi.</li>
+          {% if test.shuffle %}<li>Savollar har safar aralash tartibda beriladi.</li>{% endif %}
+        </ul>
+        {% if not test.q_count %}
+          <p class="badge badge-warn">Bu testga hali savollar qo‘shilmagan.</p>
+        {% elif not me %}
+          <a class="btn btn-primary" href="{{ url_for('login_view', next=request.path) }}">Boshlash uchun kiring</a>
+          <span class="muted small" style="margin-left:.75rem">Hisobingiz yo‘qmi? <a href="{{ url_for('register_view') }}">Ro‘yxatdan o‘ting</a></span>
+        {% elif active %}
+          <a class="btn btn-accent" href="{{ url_for('attempt_view', attempt_id=active.id) }}">Testni davom ettirish</a>
+          <span class="muted small" style="margin-left:.75rem">Yakunlanmagan urinishingiz bor.</span>
+        {% else %}
+          <form method="post" action="{{ url_for('test_start', test_id=test.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <button class="btn btn-primary" type="submit">Testni boshlash</button>
+          </form>
+        {% endif %}
+      </div>
+
+      {% if mine %}
+      <div class="panel">
+        <h3>Sizning oxirgi urinishlaringiz</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Sana</th><th class="num">Natija</th><th>Vaqt</th><th></th></tr></thead>
+            <tbody>
+            {% for a in mine %}
+              <tr>
+                <td>{{ a.finished_at|dt }}</td>
+                <td class="num"><b>{{ a.percent|pct }}%</b> {% if a.passed %}<span class="badge badge-ok">o‘tdi</span>{% endif %}</td>
+                <td>{{ a.duration_sec|dur }}</td>
+                <td><a href="{{ url_for('result_view', attempt_id=a.id) }}">Ko‘rish</a></td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <aside>
+      <div class="panel">
+        <h3>Eng yaxshi natijalar</h3>
+        {% if top %}
+        <ul class="mini-list">
+          {% for r in top %}
+          <li>
+            <span class="person"><span class="rank rank-{{ loop.index if loop.index <= 3 else 'x' }}">{{ loop.index }}</span>{{ r.full_name|short_name }}</span>
+            <span><b>{{ r.percent|pct }}%</b> <span class="muted small">{{ r.duration_sec|dur }}</span></span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p class="muted">Hali hech kim bu testni yechmagan. Birinchi bo‘ling!</p>
+        {% endif %}
+        {% if avg is not none %}<p class="muted small" style="margin:1rem 0 0">O‘rtacha natija: <b>{{ avg|pct }}%</b></p>{% endif %}
+      </div>
+    </aside>
+  </div>
+
+  {% if similar %}
+  <section class="section-tight" style="margin-top:2rem">
+    <div class="section-head"><h2>Shu fandan boshqa testlar</h2></div>
+    <div class="test-grid">{% for t in similar %}{{ test_card(t) }}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+

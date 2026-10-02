@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Sozlamalar — {{ S.site_name }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head">
+    <div class="crumbs"><a href="{{ url_for('profile_view') }}">Profil</a> / Sozlamalar</div>
+    <h1>Profil sozlamalari</h1>
+  </div>
+  <div class="two-col" style="padding-bottom:2rem">
+    <form class="form-card form" method="post" action="{{ url_for('settings_view') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="profile">
+      <h3>Shaxsiy ma’lumotlar</h3>
+      <div class="field"><label for="full_name">Ism va familiya</label><input id="full_name" type="text" name="full_name" value="{{ me.full_name }}" required maxlength="80"></div>
+      <div class="field"><label>Foydalanuvchi nomi</label><input type="text" value="{{ me.username }}" disabled><span class="hint">Foydalanuvchi nomini o‘zgartirib bo‘lmaydi.</span></div>
+      <div class="field"><label for="email">Elektron pochta</label><input id="email" type="email" name="email" value="{{ me.email }}" maxlength="120"></div>
+      <div class="field"><label for="region">Hudud</label>
+        <select id="region" name="region"><option value="">Tanlanmagan</option>
+          {% for r in regions %}<option value="{{ r }}" {% if r == me.region %}selected{% endif %}>{{ r }}</option>{% endfor %}
+        </select></div>
+      <div class="field"><label for="account_type">Maktabdagi holatingiz</label>
+        <select id="account_type" name="account_type" required>
+          <option value="">Tanlang…</option>
+          <option value="student" {% if me.account_type == 'student' %}selected{% endif %}>Maktab o‘quvchisiman</option>
+          <option value="teacher" {% if me.account_type == 'teacher' %}selected{% endif %}>O‘qituvchiman</option>
+          <option value="independent" {% if me.account_type == 'independent' %}selected{% endif %}>Maktab o‘quvchisi emasman</option>
+        </select>
+      </div>
+      <div id="school-fields">
+        <div class="field"><label for="school_id">Maktab</label>
+          <select id="school_id" name="school_id"><option value="">Maktabni tanlang…</option>
+            {% for school in schools %}<option value="{{ school.id }}" {% if me.school_id == school.id %}selected{% endif %}>{{ school.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field" id="school-class-field"><label for="school_class">Sinf (masalan, 11-B)</label><input id="school_class" type="text" name="school_class" value="{{ me.school_class }}" maxlength="20" placeholder="11-B"></div>
+      </div>
+      <button class="btn btn-primary" type="submit">Saqlash</button>
+    </form>
+
+    <form class="form-card form" method="post" action="{{ url_for('settings_view') }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="password">
+      <h3>Parolni o‘zgartirish</h3>
+      <div class="field"><label for="old">Joriy parol</label><input id="old" type="password" name="old" autocomplete="current-password" required></div>
+      <div class="field"><label for="new">Yangi parol</label><input id="new" type="password" name="new" autocomplete="new-password" minlength="6" required><span class="hint">Kamida 6 ta belgi.</span></div>
+      <div class="field"><label for="confirm">Yangi parolni takrorlang</label><input id="confirm" type="password" name="confirm" autocomplete="new-password" required></div>
+      <button class="btn btn-primary" type="submit">Parolni yangilash</button>
+    </form>
+  </div>
+</div>
+<script>
+  (function(){
+    const type=document.getElementById('account_type');
+    const schoolFields=document.getElementById('school-fields');
+    const school=document.getElementById('school_id');
+    const classField=document.getElementById('school-class-field');
+    const schoolClass=document.getElementById('school_class');
+    function update(){
+      const kind=type.value;
+      const needsSchool=kind==='student'||kind==='teacher';
+      schoolFields.hidden=!needsSchool;
+      school.required=needsSchool;
+      classField.hidden=kind!=='student';
+      schoolClass.required=kind==='student';
+    }
+    type.addEventListener('change',update);update();
+  })();
+</script>
+{% endblock %}
+
